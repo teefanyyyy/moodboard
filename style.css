@@ -1,6 +1,6 @@
 :root { --bg-wall: #8d6e63; --c-accent: #FFD1DC; --c-dark: #5d4037; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { margin: 0; background-color: var(--bg-wall); font-family: 'Gaegu', cursive; overscroll-behavior: none; user-select: none; -webkit-user-select: none; overflow-x: hidden; }
+body { margin: 0; background-color: var(--bg-wall); font-family: 'Gaegu', cursive; overscroll-behavior: none; user-select: none; -webkit-user-select: none; overflow-x: hidden; background-size: cover; background-position: center;background-attachment: fixed;background-repeat: no-repeat;min-height: 100vh;transition: background-image 0.5s;}
 
 /* HEADER & NAV */
 .header-container { text-align: center; margin: 20px 0; display: flex; justify-content: center; }
