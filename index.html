@@ -5,35 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Our Mood Board ❤️</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Library for Exporting to PNG -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
     <!-- FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap');
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Indie+Flower&family=Patrick+Hand&family=Permanent+Marker&family=Shadows+Into+Light&display=swap" rel="stylesheet">
 
+    <style>
         :root { --bg-wall: #8d6e63; --c-accent: #FFD1DC; --c-dark: #5d4037; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            margin: 0; background-color: var(--bg-wall);
-            font-family: 'Gaegu', cursive;
-            overscroll-behavior: none; user-select: none; -webkit-user-select: none;
-            overflow-x: hidden;
-        }
+        body { margin: 0; background-color: var(--bg-wall); font-family: 'Gaegu', cursive; overscroll-behavior: none; user-select: none; -webkit-user-select: none; overflow-x: hidden; }
 
-        /* --- HEADER --- */
+        /* HEADER & NAV */
         .header-container { text-align: center; margin: 20px 0; display: flex; justify-content: center; }
         .main-header-img { max-width: 85%; height: auto; max-height: 150px; filter: drop-shadow(3px 3px 0px #5d4037); }
-
-        /* --- NAVIGATION --- */
         .hamburger { position: fixed; top: 10px; left: 10px; background: white; padding: 8px 12px; font-size: 1.5rem; border-radius: 10px; cursor: pointer; z-index: 2000; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border: 2px solid var(--c-dark); }
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2001; top: 0; left: 0; background-color: #fff3e0; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
         .sidebar a { padding: 10px 30px; text-decoration: none; font-size: 1.4rem; color: var(--c-dark); display: block; cursor: pointer; }
-        .sidebar a:hover { background: #ffe0b2; }
         .sidebar-section { padding: 20px 30px; border-top: 1px dashed #ccc; margin-top: 10px; }
         .sidebar-title { font-weight: bold; margin-bottom: 10px; color: var(--c-dark); font-size: 1.2rem; }
         .bg-option { display: inline-block; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #555; margin-right: 10px; cursor: pointer; }
@@ -42,31 +33,25 @@
         .create-board-btn { background: var(--c-accent); color: #5d4037; border: 2px dashed #5d4037; }
         .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; }
 
-        /* --- LOCK BUTTON --- */
         .lock-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: white; border: 3px solid var(--c-dark); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; box-shadow: 2px 4px 10px rgba(0,0,0,0.3); z-index: 1400; cursor: pointer; transition: transform 0.2s; }
-        .lock-fab:active { transform: scale(0.9); }
-        .lock-fab.locked { background: #ffcdd2; color: #c62828; border-color: #c62828; }
-        .lock-fab.unlocked { background: #c8e6c9; color: #2e7d32; border-color: #2e7d32; }
+        .lock-fab.locked { background: #ffcdd2; color: #c62828; border-color: #c62828; } .lock-fab.unlocked { background: #c8e6c9; color: #2e7d32; border-color: #2e7d32; }
 
-        /* --- VIEW CONTAINERS --- */
+        /* VIEW CONTAINERS */
         #weeks-container { padding-bottom: 100px; display: block; }
         #pinterest-container { padding-bottom: 100px; display: none; margin-top: 20px; }
-
-        /* --- WEEK LAYOUT --- */
         .week-section { margin-bottom: 50px; }
         .week-header { padding: 0 15px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; white-space: nowrap; }
-        .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
         
-        /* Locked State */
+        /* ACTIONS */
+        .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
         body.is-locked .board-actions, body.is-locked .goal-add-btn, body.is-locked .control-handle { display: none !important; }
         body.is-locked .draggable-item { pointer-events: none; }
-        
         .action-btn { background: white; border: 2px solid var(--c-dark); border-radius: 15px; padding: 5px 10px; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.2); transition: 0.1s; font-size: 0.9rem; }
         .action-btn:active { transform: translateY(2px); box-shadow: none; }
         .btn-note { background: #fff9c4; } .btn-draw { background: #b3e5fc; } .btn-bg { background: #e0e0e0; } .btn-export { background: #e1bee7; }
 
-        /* --- GOALS STRIP --- */
+        /* GOALS STRIP */
         .goals-strip { width: 95%; margin: 0 auto; background: #fff; background-image: linear-gradient(#cfd8dc 1px, transparent 1px); background-size: 100% 30px; background-position: 0 10px; min-height: 70px; border-radius: 5px 5px 0 0; position: relative; padding: 10px 20px; box-shadow: 0 -2px 5px rgba(0,0,0,0.2); z-index: 5; }
         .goals-strip::before { content: ''; position: absolute; top: -15px; left: 0; width: 100%; height: 25px; background: radial-gradient(circle, #333 30%, transparent 35%); background-size: 35px 35px; background-position: 10px top; z-index: -1; }
         .goal-header { display: flex; justify-content: space-between; align-items: center; height: 30px; margin-bottom: 5px; }
@@ -78,12 +63,9 @@
 
         /* BOARD */
         .board-container { width: 100%; height: 60vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
-        
-        /* PINTEREST MODE STYLES */
         .pinterest-header { text-align: center; color: white; margin-bottom: 10px; }
         .pinterest-title { font-size: 2.5rem; text-shadow: 2px 2px #5d4037; margin: 0; }
-        .pinterest-board { height: 75vh; width: 100%; margin-top: 10px; } /* Taller for pinboard */
-
+        .pinterest-board { height: 75vh; width: 100%; margin-top: 10px; }
         .board-bg-cork { background-color: #bcaaa4 !important; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png') !important; background-size: auto !important; }
         .board-bg-grid { background-color: #fdfdfd !important; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px) !important; background-size: 30px 30px !important; }
         .board-bg-pink { background-color: #f8bbd0 !important; background-image: radial-gradient(#f48fb1 2px, transparent 2px) !important; background-size: 20px 20px !important; }
@@ -94,11 +76,13 @@
         .draggable-item { position: absolute; touch-action: none; overflow: visible !important; transform-origin: center center; will-change: transform, left, top, width, height; }
         .draggable-item.selected { z-index: 1000 !important; filter: drop-shadow(0 0 5px var(--c-accent)); }
         .scalable-content { transform-origin: 0 0; position: absolute; top: 0; left: 0; }
-        .note-paper { background-color: #fff; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); padding: 35px 15px 15px 55px; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; color: #444; font-size: 1.3rem; pointer-events: none; }
+        
+        .note-paper { background-color: #fff; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); padding: 35px 15px 15px 55px; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; color: #444; font-size: 1.3rem; pointer-events: none; background-size: cover; background-position: center; transition: background 0.2s; }
         .note-paper::after { content: ''; position: absolute; top: 0; left: 10px; width: 35px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 25px; background-repeat: repeat-y; opacity: 0.9; }
-        .tape { width: 100px; height: 28px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-1deg); }
+        .tape { width: 100px; height: 28px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-1deg); background-size: cover; background-position: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .note-text-area { flex-grow: 1; word-wrap: break-word; line-height: 1.2; }
         .note-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; }
+        
         .mood-tag { display: flex; align-items: center; gap: 5px; opacity: 0.9; }
         .mood-tag img { width: 25px; height: 25px; object-fit: contain; }
         .mood-tag span { font-size: 1.2rem; color: #ff8a80; font-weight: bold; }
@@ -114,40 +98,45 @@
         .rotate-handle { background-color: #64b5f6; left: 50%; top: -50px; transform: translateX(-50%); }
         .rotate-handle::after { content:''; position:absolute; top:38px; height:15px; width:2px; background:white; pointer-events:none;}
 
-        /* MODALS */
+        /* --- FANCY EDITOR MODAL --- */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; flex-direction: column; align-items: center; max-height: 90vh; overflow-y: auto; }
+        
+        .editor-container-row { display: flex; gap: 15px; align-items: flex-start; }
+        
+        /* The Note Preview */
+        .note-editor { background-color: #fff; width: 280px; height: 350px; padding: 40px 20px 20px 50px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; transition: 0.2s; background-size: cover; background-position: center; }
+        .note-editor::after { content: ''; position: absolute; top: 0; left: 15px; width: 25px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 20px; background-repeat: repeat-y; opacity: 0.9; pointer-events: none; }
+        .editor-tape { width: 120px; height: 35px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(2deg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); background-size: cover; background-position: center; }
+        #editorText { flex-grow: 1; border: none; outline: none; resize: none; font-family: 'Gaegu', cursive; font-size: 1.5rem; color: #444; background: transparent; line-height: 1.5; }
+        
+        /* The Sidebar Customizer */
+        .editor-sidebar { width: 100px; background: #fff0f5; border-radius: 15px; padding: 10px; border: 2px solid var(--c-accent); display: flex; flex-direction: column; align-items: center; max-height: 400px; overflow-y: auto; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+        .editor-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { width: 25px; height: 25px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; background: white; }
+        .tab-btn.active { background: var(--c-accent); border-color: var(--c-dark); }
+        
+        .customize-grid { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+        .style-opt { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; background-size: cover; box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+        .style-opt:hover { transform: scale(1.1); }
+        .style-opt.selected { border-color: #5d4037; }
+        .upload-btn-style { width: 35px; height: 35px; border-radius: 50%; background: #ccc; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; color: white; }
+
+        /* Other Modals */
         .confirm-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 20px; width: 300px; text-align: center; }
         .confirm-msg { font-size: 1.5rem; margin-bottom: 20px; color: #444; }
         .confirm-actions { display: flex; gap: 10px; }
-        .note-editor { background-color: #fff; width: 320px; height: 480px; padding: 40px 20px 20px 60px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
-        .note-editor::after { content: ''; position: absolute; top: 0; left: 20px; width: 25px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 20px; background-repeat: repeat-y; opacity: 0.9; pointer-events: none; }
-        .editor-tape { width: 120px; height: 35px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(2deg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        #editorText { flex-grow: 1; border: none; outline: none; resize: none; font-family: 'Gaegu', cursive; font-size: 1.5rem; color: #444; background: transparent; line-height: 1.5; }
-        .editor-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; min-height: 80px; }
-        .mood-grid { display: flex; gap: 10px; flex-wrap: wrap; width: 160px; }
-        .mood-option-container { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
-        .mood-btn { width: 35px; height: 35px; border: 2px solid transparent; border-radius: 50%; object-fit: contain; transition: transform 0.1s; padding: 2px; background: #fff; }
-        .mood-btn.selected { border-color: var(--c-dark); background: #b3e5fc; transform: scale(1.1); }
-        .mood-label-small { font-size: 0.8rem; color: #777; margin-top: -2px;}
-        .editor-photo-box { width: 80px; height: 80px; border: 2px dashed #ccc; background: #f9f9f9; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; transform: rotate(-2deg); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
-        #editorImgPreview { width: 100%; height: 100%; object-fit: cover; border: 4px solid white; display: none; }
-        .editor-buttons { display: flex; gap: 10px; margin-top: 20px; width: 300px; }
-        .save-btn { flex: 1; padding: 12px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: var(--c-accent); border: 2px solid var(--c-dark); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-        .cancel-btn { padding: 12px 20px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: white; border: 2px solid var(--c-dark); }
         .sticker-mode-area { margin-top: 15px; width: 100%; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center; }
         .sticker-link { color: white; cursor: pointer; text-decoration: underline; font-weight: bold; font-size: 1.1rem; }
-        .sticker-option { margin-top: 5px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .stats-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 25px; width: 320px; font-size: 1.2rem; }
-        .stat-row { display: flex; align-items: center; margin-bottom: 10px; }
-        .stat-label { width: 100px; }
-        .stat-bar-container { flex-grow: 1; height: 15px; background: #eee; border-radius: 10px; overflow: hidden; margin: 0 10px; }
-        .stat-bar { height: 100%; background: var(--c-accent); width: 0%; transition: width 0.5s; }
-        .stat-pct { width: 40px; text-align: right; font-weight: bold; }
-        .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
-        .bg-upload-btn { grid-column: span 2; background: #e0e0e0; border: 2px dashed #888; color: #555; }
+        .editor-buttons { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
+        .save-btn { flex: 1; padding: 12px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: var(--c-accent); border: 2px solid var(--c-dark); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+        .cancel-btn { padding: 12px 20px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: white; border: 2px solid var(--c-dark); }
+        
         .modal-draw-content { background: white; padding: 15px; border-radius: 20px; border: 3px solid var(--c-dark); width: 95%; max-width: 400px; }
+        .canvas-container { border: 2px dashed #ccc; background: white; width: 100%; height: 250px; overflow: hidden; touch-action: none; }
+        .brush-rack { display: flex; gap: 5px; justify-content: space-between; margin-bottom: 5px; }
+        .brush-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #ddd; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .brush-btn.active { background: var(--c-accent); border: 2px solid var(--c-dark); transform: scale(1.1); }
         .ibis-picker-container { display: flex; flex-direction: column; align-items: center; gap: 10px; background: #444; padding: 15px; border-radius: 15px; color: white; margin-bottom: 10px; }
         .picker-area { position: relative; width: 220px; height: 220px; }
         .hue-ring { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); position: absolute; top: 0; left: 0; cursor: crosshair; }
@@ -159,31 +148,31 @@
         .sv-indicator { position: absolute; width: 8px; height: 8px; border: 2px solid black; border-radius: 50%; background: white; pointer-events: none; }
         .slider-row { display: flex; align-items: center; gap: 5px; width: 100%; font-size: 0.8rem; }
         input[type="range"].color-slider { flex-grow: 1; height: 5px; -webkit-appearance: none; border-radius: 5px; }
-        input[type="range"].color-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: white; border: 1px solid #777;}
         .preview-box { width: 40px; height: 40px; border: 2px solid white; border-radius: 5px; background: #000; }
-        .canvas-container { border: 2px dashed #ccc; background: white; width: 100%; height: 250px; overflow: hidden; touch-action: none; }
-        .brush-rack { display: flex; gap: 5px; justify-content: space-between; margin-bottom: 5px; }
-        .brush-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #ddd; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .brush-btn.active { background: var(--c-accent); border: 2px solid var(--c-dark); transform: scale(1.1); }
+        .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
+        .bg-upload-btn { grid-column: span 2; background: #e0e0e0; border: 2px dashed #888; color: #555; }
+        .stats-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 25px; width: 320px; font-size: 1.2rem; }
+        .stat-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .stat-label { width: 100px; }
+        .stat-bar-container { flex-grow: 1; height: 15px; background: #eee; border-radius: 10px; overflow: hidden; margin: 0 10px; }
+        .stat-bar { height: 100%; background: var(--c-accent); width: 0%; transition: width 0.5s; }
+        .stat-pct { width: 40px; text-align: right; font-weight: bold; }
     </style>
 </head>
 <body class="is-locked"> 
 
-    <!-- LOCK FLOATING BUTTON -->
     <div id="lockBtn" class="lock-fab locked" onclick="toggleLockMode()">🔒</div>
 
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="toggleNav()">×</a>
         <div style="text-align:center; font-size:2rem; margin-bottom:20px;">📅 Weeks</div>
         <div id="sidebar-weeks-list"></div>
-        
-        <!-- PINTEREST BOARDS SECTION -->
         <div class="sidebar-section">
             <div class="sidebar-title">📌 Pinboards</div>
             <button class="sidebar-btn create-board-btn" onclick="createNewBoard()">+ Create Board</button>
             <div id="sidebar-boards-list"></div>
         </div>
-
         <div class="sidebar-section">
             <div class="sidebar-title" onclick="openStatsModal()" style="cursor:pointer; background:#e1f5fe; padding:10px; border-radius:10px; text-align:center;">📊 View Mood Stats</div>
         </div>
@@ -199,14 +188,10 @@
 
     <button class="hamburger" onclick="toggleNav()">☰</button>
     
-    <div class="header-container">
-        <img id="mainTitleImage" class="main-header-img" alt="Mood Board">
-    </div>
+    <div class="header-container"><img id="mainTitleImage" class="main-header-img" alt="Mood Board"></div>
 
-    <!-- WEEK VIEW -->
     <div id="weeks-container"></div>
 
-    <!-- PINTEREST BOARD VIEW -->
     <div id="pinterest-container">
         <div class="pinterest-header">
             <h2 id="pinboard-title" class="pinterest-title">My Board</h2>
@@ -224,20 +209,48 @@
 
     <div id="overlay" onclick="closeAllModals()"></div>
 
-    <!-- EDITOR MODAL -->
+    <!-- NEW EDITOR MODAL -->
     <div id="noteEditorModal" class="modal">
-        <div class="note-editor">
-            <div class="editor-tape"></div>
-            <textarea id="editorText" placeholder="Dear Diary..." autofocus></textarea>
-            <div class="editor-footer">
-                <div id="moodGrid" class="mood-grid"></div>
-                <input type="file" id="editorFileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(this)">
-                <div class="editor-photo-box" onclick="document.getElementById('editorFileInput').click()">
-                    <span class="editor-photo-label" id="photoLabel">+ Pic</span>
-                    <img id="editorImgPreview" src="" alt="preview">
+        <div class="editor-container-row">
+            <div class="note-editor" id="noteEditorPreview">
+                <div class="editor-tape" id="editorTapePreview"></div>
+                <textarea id="editorText" placeholder="Dear Diary..." autofocus></textarea>
+                <div class="editor-footer">
+                    <div id="moodGrid" class="mood-grid"></div>
+                    <input type="file" id="editorFileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(this)">
+                    <div class="editor-photo-box" onclick="document.getElementById('editorFileInput').click()">
+                        <span class="editor-photo-label" id="photoLabel">+ Pic</span>
+                        <img id="editorImgPreview" src="" alt="preview">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="editor-sidebar">
+                <div class="editor-tabs">
+                    <div class="tab-btn active" onclick="setEditorTab('tape')">🎞️</div>
+                    <div class="tab-btn" onclick="setEditorTab('paper')">📄</div>
+                    <div class="tab-btn" onclick="setEditorTab('font')">🔤</div>
+                </div>
+                
+                <div id="tab-tape" class="customize-grid">
+                    <input type="file" id="tapeUpload" accept="image/*" style="display:none;" onchange="handleAssetUpload(this, 'tape')">
+                    <div class="upload-btn-style" onclick="document.getElementById('tapeUpload').click()">+</div>
+                    <!-- Tapes injected by JS -->
+                </div>
+                
+                <div id="tab-paper" class="customize-grid" style="display:none;">
+                    <input type="file" id="paperUpload" accept="image/*" style="display:none;" onchange="handleAssetUpload(this, 'paper')">
+                    <div class="upload-btn-style" onclick="document.getElementById('paperUpload').click()">+</div>
+                    <!-- Papers injected by JS -->
+                </div>
+
+                <div id="tab-font" class="customize-grid" style="display:none;">
+                    <input type="color" id="fontColorPicker" value="#444444" onchange="applyFontColor(this.value)" style="width:100%; height:30px; border:none; cursor:pointer;">
+                    <!-- Fonts injected by JS -->
                 </div>
             </div>
         </div>
+
         <div class="editor-buttons">
             <button class="cancel-btn" onclick="closeAllModals()">Cancel</button>
             <button class="save-btn" onclick="saveFromEditor('note')">Stick It! 📌</button>
@@ -251,7 +264,7 @@
         </div>
     </div>
 
-    <!-- DRAW MODAL -->
+    <!-- DRAW, SETTINGS, ETC (Standard) -->
     <div id="drawModal" class="modal">
         <div class="modal-draw-content">
             <h3 id="drawModalTitle" style="margin:0 0 10px 0; text-align:center;">Art Studio 🎨</h3>
@@ -289,21 +302,8 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL (HARD RESET) -->
-    <div id="settingsModal" class="modal">
-        <div class="confirm-box" style="width:340px;">
-            <h3>⚙️ Settings</h3>
-            <p style="color:#777; font-size:1rem;">Danger Zone</p>
-            <button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button>
-            <br><br>
-            <button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button>
-        </div>
-    </div>
-
-    <!-- CONFIRM MODAL -->
+    <div id="settingsModal" class="modal"><div class="confirm-box" style="width:340px;"><h3>⚙️ Settings</h3><p style="color:#777; font-size:1rem;">Danger Zone</p><button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button><br><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     <div id="confirmModal" class="modal"><div class="confirm-box"><div class="confirm-msg" id="confirmMsg">Are you sure?</div><div class="confirm-actions"><button class="cancel-btn" onclick="closeConfirm(false)">No</button><button class="save-btn" style="background:#ef5350; color:white;" onclick="closeConfirm(true)">Yes</button></div></div></div>
-    
-    <!-- STATS & BG MODAL -->
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     <div id="bgModal" class="modal"><div class="modal-draw-content" style="text-align:center;"><h3>Choose Background 🖼️</h3><div class="bg-grid-container"><div class="bg-btn bg-cork" onclick="setBoardBg('cork')">Cork</div><div class="bg-btn bg-grid" onclick="setBoardBg('grid')">Grid</div><div class="bg-btn bg-pink" onclick="setBoardBg('pink')">Pink</div><div class="bg-btn bg-clouds" onclick="setBoardBg('clouds')">Clouds</div><input type="file" id="bgFileInput" accept="image/*" style="display:none;" onchange="handleBgUpload(this)"><div class="bg-btn bg-upload-btn" onclick="document.getElementById('bgFileInput').click()">⬆️ Upload Photo</div></div><br><button class="cancel-btn" onclick="closeAllModals()">Close</button></div></div>
 
@@ -320,6 +320,23 @@
             { name: "yap", src: "./yap.png" }
         ];
 
+        /* --- DEFAULT PRESETS (Tape, Paper, Fonts) --- */
+        const DEFAULT_TAPES = [
+            { id: 'tape1', src: '' }, // Default semi-transparent blue
+            { id: 'tape2', src: 'https://img.freepik.com/free-png/washi-tape-strip-patterned-design-element_53876-115383.jpg' },
+            { id: 'tape3', src: 'https://img.freepik.com/free-vector/grid-washi-tape-vector-strip-cute-stationery-blue_53876-145694.jpg' }
+        ];
+        const DEFAULT_PAPERS = [
+            { id: 'white', bg: '#fff' },
+            { id: 'yellow', bg: '#fff9c4' },
+            { id: 'blue', bg: '#e1f5fe' },
+            { id: 'pink', bg: '#f8bbd0' },
+            { id: 'grid', bg: 'url("https://www.transparenttextures.com/patterns/graphy.png") #fff' }
+        ];
+        const CUSTOM_FONTS = [
+            'Gaegu', 'Indie Flower', 'Patrick Hand', 'Permanent Marker', 'Shadows Into Light'
+        ];
+
         const firebaseConfig = {
           apiKey: "AIzaSyCOqqMp096MQh19FEEYpdwDzhx-R9VlRrw",
           authDomain: "moodboard-e7832.firebaseapp.com",
@@ -329,19 +346,22 @@
           appId: "1:173097557380:web:7a188a47ed996e7fa091d1"
         };
 
-        /* --- VARIABLES --- */
+        /* --- VARS --- */
         let db=null; let useFirebase=false; 
         let items=[]; let goals={}; let boardBgs={}; let pinterestBoards=[];
+        let userTapes=[]; let userPapers=[];
         
         let pickedColor={h:0,s:100,v:0,r:0,g:0,b:0,hex:"#000000"}; 
         let editingItemId=null; let currentActiveWeek=''; let currentEditorImage=null; let confirmCallback=null;
         let selectedMoodSrc = null;
         let activeWeeks = []; 
         let isLocked = true;
-        let currentMode = 'weeks'; // 'weeks' or 'pinterest'
+        let currentMode = 'weeks'; 
         let activeBoardId = null;
+        
+        // Editor State
+        let currentTape = null; let currentPaper = null; let currentFont = 'Gaegu'; let currentFontColor = '#444';
 
-        /* --- INITIALIZATION --- */
         window.onload = function() {
             document.getElementById('mainTitleImage').src = TITLE_IMAGE_SRC;
             initMoodSelector();
@@ -361,210 +381,174 @@
             document.getElementById('drawSize').addEventListener('input',(e)=>document.getElementById('sizeVal').innerText=e.target.value);
         };
 
-        /* --- NAVIGATION & VIEW SWITCHING --- */
         function toggleLockMode() { isLocked = !isLocked; updateLockUI(); }
-
-        function updateLockUI() {
-            const body = document.body;
-            const btn = document.getElementById('lockBtn');
-            if(isLocked) {
-                body.classList.add('is-locked');
-                btn.classList.add('locked'); btn.classList.remove('unlocked'); btn.innerText = "🔒";
-                document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
-            } else {
-                body.classList.remove('is-locked');
-                btn.classList.remove('locked'); btn.classList.add('unlocked'); btn.innerText = "🔓";
-            }
-        }
+        function updateLockUI() { const body = document.body; const btn = document.getElementById('lockBtn'); if(isLocked) { body.classList.add('is-locked'); btn.classList.add('locked'); btn.classList.remove('unlocked'); btn.innerText = "🔒"; document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected')); } else { body.classList.remove('is-locked'); btn.classList.remove('locked'); btn.classList.add('unlocked'); btn.innerText = "🔓"; } }
 
         function showWeeks() {
-            currentMode = 'weeks';
-            activeBoardId = null;
+            currentMode = 'weeks'; activeBoardId = null;
             document.getElementById('weeks-container').style.display = 'block';
             document.getElementById('pinterest-container').style.display = 'none';
             toggleNav();
+            renderAllItems(); // FIX: FORCE RE-RENDER
         }
 
         function showPinterestBoard(boardId) {
-            currentMode = 'pinterest';
-            activeBoardId = boardId;
-            
+            currentMode = 'pinterest'; activeBoardId = boardId;
             const board = pinterestBoards.find(b => b.id === boardId);
             document.getElementById('pinboard-title').innerText = board ? board.name : "My Board";
-            
             document.getElementById('weeks-container').style.display = 'none';
             document.getElementById('pinterest-container').style.display = 'block';
-            
-            // Render items for this board
             renderActivePinterestBoard();
-            // Apply BG
             if(boardBgs[boardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[boardId]);
             else applyBgToContainer(document.getElementById('active-board-container'), {type:'cork'});
-            
             toggleNav();
         }
 
-        function createNewBoard() {
-            const name = prompt("Enter a name for your new Pinboard:");
-            if(name) {
-                const newBoard = { id: 'pin-' + Date.now(), name: name };
-                if(!pinterestBoards) pinterestBoards = [];
-                pinterestBoards.push(newBoard);
-                saveData('boards');
-                renderBoardsList();
-                showPinterestBoard(newBoard.id);
-            }
-        }
-
-        function renderBoardsList() {
-            const list = document.getElementById('sidebar-boards-list');
-            list.innerHTML = '';
-            if(pinterestBoards) {
-                pinterestBoards.forEach(board => {
-                    const a = document.createElement('a');
-                    a.innerText = "📌 " + board.name;
-                    a.onclick = () => showPinterestBoard(board.id);
-                    list.appendChild(a);
-                });
-            }
-        }
-
-        function exportBoardAsPNG() {
-            // Temporarily hide handles and lock button for clean screenshot
-            document.body.classList.add('is-locked'); 
-            const boardElement = document.getElementById('active-board-container');
-            
-            html2canvas(boardElement, {
-                useCORS: true, // Important for external images
-                scale: 2 // High resolution
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = document.getElementById('pinboard-title').innerText + '.png';
-                link.href = canvas.toDataURL();
-                link.click();
-                // Restore state
-                if(!isLocked) document.body.classList.remove('is-locked');
-            });
-        }
-
+        function createNewBoard() { const name = prompt("Enter a name for your new Pinboard:"); if(name) { const newBoard = { id: 'pin-' + Date.now(), name: name }; if(!pinterestBoards) pinterestBoards = []; pinterestBoards.push(newBoard); saveData('boards'); renderBoardsList(); showPinterestBoard(newBoard.id); } }
+        function renderBoardsList() { const list = document.getElementById('sidebar-boards-list'); list.innerHTML = ''; if(pinterestBoards) { pinterestBoards.forEach(board => { const a = document.createElement('a'); a.innerText = "📌 " + board.name; a.onclick = () => showPinterestBoard(board.id); list.appendChild(a); }); } }
+        function exportBoardAsPNG() { document.body.classList.add('is-locked'); const boardElement = document.getElementById('active-board-container'); html2canvas(boardElement, { useCORS: true, scale: 2 }).then(canvas => { const link = document.createElement('a'); link.download = document.getElementById('pinboard-title').innerText + '.png'; link.href = canvas.toDataURL(); link.click(); if(!isLocked) document.body.classList.remove('is-locked'); }); }
         function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; toggleNav(); }
         function askHardReset() { const code = prompt("To delete EVERYTHING, type the word 'DELETE' below:"); if (code === "DELETE") { localStorage.clear(); location.reload(); } else if (code !== null) { alert("Incorrect code. Nothing was deleted."); } }
 
         /* --- DATA HANDLING --- */
-        function loadFromLocal(){ 
-            if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); 
-            if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); 
-            if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); 
-            if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards'));
-            renderApp(); 
-        }
-        
-        function loadFromFirebase(){ 
-            db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();}); 
-            db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); 
-            db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); 
-            db.collection("data").doc("boards").onSnapshot((d)=>{if(d.exists){pinterestBoards=d.data().list || []; renderBoardsList();}});
-        }
-        
-        function saveData(t){ 
-            if(!useFirebase){ 
-                if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); 
-                if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); 
-                if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); 
-                if(t==='boards')localStorage.setItem('moodboard_pinboards',JSON.stringify(pinterestBoards));
-                return; 
-            } 
-            if(t==='goals')db.collection("data").doc("goals").set(goals); 
-            if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); 
-            if(t==='boards')db.collection("data").doc("boards").set({list: pinterestBoards});
-        }
-        
-        function renderApp(){ renderAllItems(); renderGoals(); applyAllBoardBgs(); renderBoardsList(); }
+        function loadFromLocal(){ if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards')); if(localStorage.getItem('moodboard_assets')) { const assets = JSON.parse(localStorage.getItem('moodboard_assets')); userTapes=assets.tapes||[]; userPapers=assets.papers||[]; } renderApp(); }
+        function loadFromFirebase(){ db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();}); db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); db.collection("data").doc("boards").onSnapshot((d)=>{if(d.exists){pinterestBoards=d.data().list || []; renderBoardsList();}}); db.collection("data").doc("assets").onSnapshot((d)=>{if(d.exists){userTapes=d.data().tapes||[]; userPapers=d.data().papers||[]; renderEditorAssets(); }}); }
+        function saveData(t){ if(!useFirebase){ if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); if(t==='boards')localStorage.setItem('moodboard_pinboards',JSON.stringify(pinterestBoards)); if(t==='assets')localStorage.setItem('moodboard_assets', JSON.stringify({tapes:userTapes, papers:userPapers})); return; } if(t==='goals')db.collection("data").doc("goals").set(goals); if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); if(t==='boards')db.collection("data").doc("boards").set({list: pinterestBoards}); if(t==='assets')db.collection("data").doc("assets").set({tapes:userTapes, papers:userPapers}); }
+        function renderApp(){ renderAllItems(); renderGoals(); applyAllBoardBgs(); renderBoardsList(); renderEditorAssets(); }
 
-        /* --- WEEKS LOGIC --- */
-        function initWeeks() {
-            const today = new Date();
-            const currentWeekId = getWeekId(today);
-            const prevDate = new Date(today); prevDate.setDate(today.getDate() - 7);
-            const prevWeekId = getWeekId(prevDate);
-            if(!activeWeeks.includes(prevWeekId)) activeWeeks.push(prevWeekId);
-            if(!activeWeeks.includes(currentWeekId)) activeWeeks.push(currentWeekId);
-            activeWeeks.sort(); 
-            const container = document.getElementById('weeks-container');
-            const sidebarList = document.getElementById('sidebar-weeks-list');
-            container.innerHTML = ''; sidebarList.innerHTML = '';
-            
-            activeWeeks.forEach(id => {
-                const datesLabel = getWeekLabel(id);
-                const link = document.createElement('a'); link.href = "#"; link.innerText = datesLabel; 
-                link.onclick = () => { showWeeks(); window.location.hash = id; }; // Switch to week view
-                sidebarList.appendChild(link);
-                
-                const section = document.createElement('div'); section.className = 'week-section'; section.id = id;
-                section.innerHTML = `
-                    <div class="week-header">
-                        <div class="week-title">${datesLabel}</div>
-                        <div class="board-actions">
-                            <button class="action-btn btn-note" onclick="openNoteEditor('${id}')">📝 Sticky</button>
-                            <button class="action-btn btn-draw" onclick="openDrawModal('${id}')">🎨 Paint</button>
-                            <button class="action-btn btn-bg" onclick="openBgModal('${id}')">🖼️ BG</button>
-                        </div>
-                    </div>
-                    <div class="goals-strip">
-                        <div class="goal-header"><span>Weekly Goals</span><button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button></div>
-                        <ul class="goal-list" id="goals-${id}"></ul>
-                    </div>
-                    <div class="board-container" id="${id}-container">
-                        <div class="board-inner" id="board-${id}" onclick="deselectAll(event)"></div>
-                    </div>`;
-                container.appendChild(section);
-            });
-        }
-        function getWeekId(dateObj) { const d = new Date(dateObj); const day = d.getDay(); const diff = d.getDate() - day; const sunday = new Date(d.setDate(diff)); return "week-" + sunday.toISOString().split('T')[0]; }
-        function getWeekLabel(weekId) { const dateStr = weekId.replace('week-', ''); const start = new Date(dateStr); const end = new Date(start); end.setDate(start.getDate() + 6); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return `${monthNames[start.getMonth()]} ${start.getDate()} - ${end.getDate()}`; }
-
-        function addGoal(id){ if(isLocked) return; const t = prompt("New Goal:"); if(t){ if(!goals[id]) goals[id]=[]; goals[id].push({text:t, done:false}); saveData('goals'); renderGoals(); } }
-        function toggleGoal(id, idx){ if(isLocked) return; const d = !goals[id][idx].done; goals[id][idx].done = d; saveData('goals'); renderGoals(); if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
-        function deleteGoal(id, idx){ if(isLocked) return; showConfirm("Delete this goal?",()=>{ goals[id].splice(idx,1); saveData('goals'); renderGoals(); }); }
-        function renderGoals(){ for(const[id,list]of Object.entries(goals)){ const ul=document.getElementById('goals-'+id); if(!ul) continue; ul.innerHTML=''; list.forEach((g,i)=>{ const li=document.createElement('li'); li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`; ul.appendChild(li); }); } }
-
-        /* --- NOTE EDITOR --- */
+        /* --- EDITOR & CUSTOMIZATION LOGIC --- */
         function initMoodSelector(){ const container = document.getElementById('moodGrid'); container.innerHTML = ''; CUSTOM_MOODS.forEach(opt => { const wrapper = document.createElement('div'); wrapper.className = 'mood-option-container'; wrapper.onclick = () => selectMood(opt.src, wrapper.querySelector('img')); const img = document.createElement('img'); img.src = opt.src; img.title = opt.name; img.className = 'mood-btn'; const span = document.createElement('span'); span.className = 'mood-label-small'; span.innerText = opt.name; wrapper.appendChild(img); wrapper.appendChild(span); container.appendChild(wrapper); }); }
         function selectMood(src, imgElement) { selectedMoodSrc = src; document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected')); imgElement.classList.add('selected'); }
 
         function openNoteEditor(weekIdOrItem) {
             if(isLocked) return;
-            // Determine active context
+            const modal = document.getElementById('noteEditorModal');
+            
+            // Reset States
+            currentEditorImage = null; selectedMoodSrc = null; 
+            currentTape = null; currentPaper = null; currentFont = 'Gaegu'; currentFontColor = '#444';
+            
+            document.getElementById('editorImgPreview').style.display = 'none'; 
+            document.getElementById('photoLabel').style.display = 'block'; 
+            document.getElementById('editorFileInput').value = '';
+            document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
+            renderEditorAssets(); // Refresh lists
+
             if (typeof weekIdOrItem === 'string') { 
-                currentActiveWeek = weekIdOrItem; // Can be a weekId OR a boardId
-                editingItemId = null; 
+                currentActiveWeek = weekIdOrItem; editingItemId = null; 
                 document.getElementById('editorText').value = ""; 
             } else { 
-                const item = weekIdOrItem; 
-                editingItemId = item.id; 
-                currentActiveWeek = item.weekId; // Item knows where it belongs
+                const item = weekIdOrItem; editingItemId = item.id; currentActiveWeek = item.weekId; 
                 document.getElementById('editorText').value = item.text || ""; 
+                
+                // Load Visuals
                 if(item.moodImg) { selectedMoodSrc = item.moodImg; const match = Array.from(document.querySelectorAll('.mood-btn')).find(img => img.src === item.moodImg); if(match) match.classList.add('selected'); }
                 if(item.imgUrl) { currentEditorImage = item.imgUrl; document.getElementById('editorImgPreview').src = item.imgUrl; document.getElementById('editorImgPreview').style.display = 'block'; document.getElementById('photoLabel').style.display = 'none'; } 
+                
+                if(item.tapeUrl) currentTape = item.tapeUrl;
+                if(item.paperUrl) currentPaper = item.paperUrl;
+                if(item.fontFamily) currentFont = item.fontFamily;
+                if(item.fontColor) currentFontColor = item.fontColor;
             }
             
-            // Reset Editor UI
-            if(!editingItemId) {
-                currentEditorImage = null; selectedMoodSrc = null; 
-                document.getElementById('editorImgPreview').style.display = 'none'; 
-                document.getElementById('photoLabel').style.display = 'block'; 
-                document.getElementById('editorFileInput').value = '';
-                document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
-            }
+            applyEditorPreviewStyles();
+            modal.style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; document.getElementById('editorText').focus();
+        }
 
-            document.getElementById('noteEditorModal').style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; document.getElementById('editorText').focus();
+        function setEditorTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[onclick="setEditorTab('${tab}')"]`).classList.add('active');
+            document.getElementById('tab-tape').style.display = tab === 'tape' ? 'flex' : 'none';
+            document.getElementById('tab-paper').style.display = tab === 'paper' ? 'flex' : 'none';
+            document.getElementById('tab-font').style.display = tab === 'font' ? 'flex' : 'none';
+        }
+
+        function renderEditorAssets() {
+            // Tapes
+            const tapeDiv = document.getElementById('tab-tape');
+            // Keep the upload button
+            const uploadTape = tapeDiv.firstElementChild; 
+            const uploadBtnTape = tapeDiv.children[1];
+            tapeDiv.innerHTML = ''; tapeDiv.appendChild(uploadTape); tapeDiv.appendChild(uploadBtnTape);
+            
+            [...DEFAULT_TAPES, ...userTapes].forEach(t => {
+                const d = document.createElement('div'); d.className = 'style-opt';
+                if(t.src) d.style.backgroundImage = `url('${t.src}')`; else d.style.backgroundColor = 'rgba(100, 221, 231, 0.6)';
+                d.onclick = () => { currentTape = t.src; applyEditorPreviewStyles(); };
+                tapeDiv.appendChild(d);
+            });
+
+            // Papers
+            const paperDiv = document.getElementById('tab-paper');
+            const uploadPaper = paperDiv.firstElementChild; 
+            const uploadBtnPaper = paperDiv.children[1];
+            paperDiv.innerHTML = ''; paperDiv.appendChild(uploadPaper); paperDiv.appendChild(uploadBtnPaper);
+            
+            [...DEFAULT_PAPERS, ...userPapers].forEach(p => {
+                const d = document.createElement('div'); d.className = 'style-opt';
+                if(p.bg.includes('url')) d.style.background = p.bg; else d.style.backgroundColor = p.bg;
+                d.onclick = () => { currentPaper = p.bg; applyEditorPreviewStyles(); };
+                paperDiv.appendChild(d);
+            });
+
+            // Fonts
+            const fontDiv = document.getElementById('tab-font');
+            // Reset to just color picker
+            fontDiv.innerHTML = `<input type="color" id="fontColorPicker" value="${currentFontColor}" onchange="applyFontColor(this.value)" style="width:100%; height:30px; border:none; cursor:pointer;">`;
+            
+            CUSTOM_FONTS.forEach(f => {
+                const d = document.createElement('div'); d.innerText = "Aa"; d.className = 'style-opt';
+                d.style.fontFamily = f; d.style.display = 'flex'; d.style.justifyContent = 'center'; d.style.alignItems = 'center';
+                d.onclick = () => { currentFont = f; applyEditorPreviewStyles(); };
+                fontDiv.appendChild(d);
+            });
+        }
+
+        function handleAssetUpload(input, type) {
+            if(input.files && input.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => {
+                    const obj = { id: Date.now(), [type==='tape'?'src':'bg']: e.target.result };
+                    if(type==='tape') userTapes.push(obj); else userPapers.push(obj);
+                    saveData('assets');
+                    renderEditorAssets();
+                };
+                r.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function applyFontColor(c) { currentFontColor = c; applyEditorPreviewStyles(); }
+
+        function applyEditorPreviewStyles() {
+            const editor = document.getElementById('noteEditorPreview');
+            const tape = document.getElementById('editorTapePreview');
+            const text = document.getElementById('editorText');
+
+            if(currentPaper) {
+                if(currentPaper.includes('url')) editor.style.background = currentPaper;
+                else { editor.style.background = ''; editor.style.backgroundColor = currentPaper; }
+            } else { editor.style.background = '#fff'; }
+
+            if(currentTape) { tape.style.backgroundColor = 'transparent'; tape.style.backgroundImage = `url('${currentTape}')`; }
+            else { tape.style.backgroundImage = ''; tape.style.backgroundColor = 'rgba(100, 221, 231, 0.6)'; }
+
+            text.style.fontFamily = currentFont;
+            text.style.color = currentFontColor;
         }
 
         function saveFromEditor(type) {
             const text = document.getElementById('editorText').value; const hasBorder = document.getElementById('stickerBorderCheck').checked;
             let moodName = "Unknown"; const moodObj = CUSTOM_MOODS.find(m => m.src === selectedMoodSrc); if(moodObj) moodName = moodObj.name;
             const baseW = type === 'note' ? 220 : 200; const baseH = type === 'note' ? 260 : 200;
-            const newItem = { id: editingItemId || Date.now(), type, text, moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder };
+            
+            const newItem = { 
+                id: editingItemId || Date.now(), type, text, 
+                moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, 
+                weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder,
+                // NEW STYLES
+                tapeUrl: currentTape, paperUrl: currentPaper, fontFamily: currentFont, fontColor: currentFontColor
+            };
+            
             if (editingItemId) { const existing = items.find(i => i.id === editingItemId); if(existing) { newItem.x = existing.x; newItem.y = existing.y; newItem.w = existing.w; newItem.h = existing.h; newItem.rot = existing.rot; const idx = items.indexOf(existing); items[idx] = newItem; } } else { items.push(newItem); }
             if(useFirebase) db.collection("items").doc(String(newItem.id)).set(newItem); else { saveData('items'); renderAllItems(); }
             closeAllModals();
@@ -577,24 +561,20 @@
             closeAllModals(); clearCanvas();
         }
 
-        /* --- ITEMS & RENDERING --- */
+        /* --- DOM CREATION --- */
         function createDOMItem(item) {
             let containerId;
-            // Determine where to render
             if(item.weekId.startsWith('pin-')) {
-                // It's a Pinterest Board Item
-                if(currentMode !== 'pinterest' || item.weekId !== activeBoardId) return; // Only render if looking at correct board
+                if(currentMode !== 'pinterest' || item.weekId !== activeBoardId) return;
                 containerId = 'active-board-inner';
             } else {
-                // It's a Week Item
                 if(currentMode !== 'weeks') return;
                 containerId = 'board-' + item.weekId;
             }
 
             const board = document.getElementById(containerId); if(!board) return;
             const div = document.createElement('div'); div.classList.add('draggable-item');
-            div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; 
-            div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
+            div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
             div.style.transform = `rotate(${item.rot}deg)`; div.style.zIndex = 1;
 
             const baseW = item.type === 'note' ? 220 : 200; const baseH = item.type === 'note' ? 260 : 200;
@@ -605,7 +585,25 @@
             let innerContent = '';
             if(item.type === 'note') {
                 let moodContent = ''; if(item.moodImg && item.moodName) moodContent = `<div class="mood-tag"><img src="${item.moodImg}"><span>${item.moodName}</span></div>`;
-                innerContent = `<div class="note-paper"><div class="tape"></div><div class="note-text-area">${item.text}</div><div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div></div>`;
+                
+                // APPLY CUSTOM STYLES
+                let paperStyle = '';
+                if(item.paperUrl) {
+                    if(item.paperUrl.includes('url')) paperStyle = `background: ${item.paperUrl};`;
+                    else paperStyle = `background-color: ${item.paperUrl};`;
+                }
+                
+                let tapeStyle = '';
+                if(item.tapeUrl) tapeStyle = `background-image: url('${item.tapeUrl}'); background-color: transparent;`;
+                
+                let fontStyle = `font-family: '${item.fontFamily || 'Gaegu'}', cursive; color: ${item.fontColor || '#444'};`;
+
+                innerContent = `
+                <div class="note-paper" style="${paperStyle} ${fontStyle}">
+                    <div class="tape" style="${tapeStyle}"></div>
+                    <div class="note-text-area">${item.text}</div>
+                    <div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div>
+                </div>`;
             } else {
                 const borderClass = item.hasBorder ? 'sticker-border' : '';
                 if(item.imgUrl) innerContent = `<div class="${borderClass}"><img src="${item.imgUrl}" class="sticker-img" style="width:100%; height:100%; object-fit:contain;"></div>`;
@@ -743,15 +741,8 @@
         function closeAllModals(){if(document.getElementById('confirmModal').style.display==='flex')return; document.querySelectorAll('.modal').forEach(m=>m.style.display='none');document.getElementById('overlay').style.display='none';}
         function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
         function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
-        
         function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
-        function closeConfirm(res) { 
-            document.getElementById('confirmModal').style.display='none'; 
-            document.getElementById('overlay').style.display='none'; // Force hide overlay
-            if(res && confirmCallback) confirmCallback(); 
-            confirmCallback=null; 
-        }
-        
+        function closeConfirm(res) { document.getElementById('confirmModal').style.display='none'; document.getElementById('overlay').style.display='none'; if(res && confirmCallback) confirmCallback(); confirmCallback=null; }
         function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
         function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
         function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
@@ -759,10 +750,14 @@
         function setBoardBg(t,u=null){if(u)boardBgs[currentActiveWeek]={type:'custom',url:u};else boardBgs[currentActiveWeek]={type:t,url:null};applyBgToContainer(document.getElementById(currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container"),boardBgs[currentActiveWeek]);saveData('bgs');closeAllModals();}
         function handleBgUpload(i){if(i.files[0]){const r=new FileReader();r.onload=(e)=>setBoardBg('custom',e.target.result);r.readAsDataURL(i.files[0]);}}
         function applyBgToContainer(c,d){if(!d || !c)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
-        function applyAllBoardBgs(){
-            activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);});
-            if(activeBoardId && boardBgs[activeBoardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[activeBoardId]);
-        }
+        function applyAllBoardBgs(){ activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);}); if(activeBoardId && boardBgs[activeBoardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[activeBoardId]); }
+        function initWeeks() { const today = new Date(); const currentWeekId = getWeekId(today); const prevDate = new Date(today); prevDate.setDate(today.getDate() - 7); const prevWeekId = getWeekId(prevDate); if(!activeWeeks.includes(prevWeekId)) activeWeeks.push(prevWeekId); if(!activeWeeks.includes(currentWeekId)) activeWeeks.push(currentWeekId); activeWeeks.sort(); const container = document.getElementById('weeks-container'); const sidebarList = document.getElementById('sidebar-weeks-list'); container.innerHTML = ''; sidebarList.innerHTML = ''; activeWeeks.forEach(id => { const datesLabel = getWeekLabel(id); const link = document.createElement('a'); link.href = "#"; link.innerText = datesLabel; link.onclick = () => { showWeeks(); window.location.hash = id; }; sidebarList.appendChild(link); const section = document.createElement('div'); section.className = 'week-section'; section.id = id; section.innerHTML = ` <div class="week-header"> <div class="week-title">${datesLabel}</div> <div class="board-actions"> <button class="action-btn btn-note" onclick="openNoteEditor('${id}')">📝 Sticky</button> <button class="action-btn btn-draw" onclick="openDrawModal('${id}')">🎨 Paint</button> <button class="action-btn btn-bg" onclick="openBgModal('${id}')">🖼️ BG</button> </div> </div> <div class="goals-strip"> <div class="goal-header"><span>Weekly Goals</span><button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button></div> <ul class="goal-list" id="goals-${id}"></ul> </div> <div class="board-container" id="${id}-container"> <div class="board-inner" id="board-${id}" onclick="deselectAll(event)"></div> </div>`; container.appendChild(section); }); }
+        function getWeekId(dateObj) { const d = new Date(dateObj); const day = d.getDay(); const diff = d.getDate() - day; const sunday = new Date(d.setDate(diff)); return "week-" + sunday.toISOString().split('T')[0]; }
+        function getWeekLabel(weekId) { const dateStr = weekId.replace('week-', ''); const start = new Date(dateStr); const end = new Date(start); end.setDate(start.getDate() + 6); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return `${monthNames[start.getMonth()]} ${start.getDate()} - ${end.getDate()}`; }
+        function addGoal(id){ if(isLocked) return; const t = prompt("New Goal:"); if(t){ if(!goals[id]) goals[id]=[]; goals[id].push({text:t, done:false}); saveData('goals'); renderGoals(); } }
+        function toggleGoal(id, idx){ if(isLocked) return; const d = !goals[id][idx].done; goals[id][idx].done = d; saveData('goals'); renderGoals(); if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
+        function deleteGoal(id, idx){ if(isLocked) return; showConfirm("Delete this goal?",()=>{ goals[id].splice(idx,1); saveData('goals'); renderGoals(); }); }
+        function renderGoals(){ for(const[id,list]of Object.entries(goals)){ const ul=document.getElementById('goals-'+id); if(!ul) continue; ul.innerHTML=''; list.forEach((g,i)=>{ const li=document.createElement('li'); li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`; ul.appendChild(li); }); } }
 
         /* --- DRAW CANVAS --- */
         const canvas=document.getElementById('drawCanvas');const ctx=canvas.getContext('2d');let currentBrush='pen';let isDrawing=false;
@@ -778,3 +773,5 @@
         function updateColorUI(){document.getElementById('svSquare').style.backgroundColor=`hsl(${pickedColor.h},100%,50%)`;const rgb=hsvToRgb(pickedColor.h/360,pickedColor.s/100,pickedColor.v/100);pickedColor.r=rgb.r;pickedColor.g=rgb.g;pickedColor.b=rgb.b;pickedColor.hex=`rgb(${rgb.r},${rgb.g},${rgb.b})`;const svInd=document.getElementById('svInd');svInd.style.left=pickedColor.s+'%';svInd.style.top=(100-pickedColor.v)+'%';document.getElementById('rSlider').value=rgb.r;document.getElementById('gSlider').value=rgb.g;document.getElementById('bSlider').value=rgb.b;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
         function updateColorFromSliders(){const r=parseInt(document.getElementById('rSlider').value);const g=parseInt(document.getElementById('gSlider').value);const b=parseInt(document.getElementById('bSlider').value);pickedColor.hex=`rgb(${r},${g},${b})`;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
     </script>
+</body>
+</html>
