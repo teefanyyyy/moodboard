@@ -369,6 +369,14 @@ function createDOMItem(item) {
 }
 
 function setupItemEvents(div, item, baseW, baseH) {
+        // --- ADD THIS BLOCK START ---
+    div.addEventListener('click', (e) => {
+        // Only open if Locked, it is a Note, and we didn't click a control handle
+        if(isLocked && item.type === 'note' && !e.target.classList.contains('control-handle')) {
+            openViewModal(item);
+        }
+    });
+    // --- ADD THIS BLOCK END ---
     const scalable = div.querySelector('.scalable-content');
     const resizer = div.querySelector('.resize-handle');
     const rotater = div.querySelector('.rotate-handle');
@@ -567,6 +575,16 @@ function initWeeks() {
 
     // Populate Sidebar with Grouping
     renderSidebarWeeks();
+        // Auto Scroll to Current Week
+    setTimeout(() => {
+        const currentWeekEl = document.getElementById(currentWeekId);
+        if(currentWeekEl) {
+            currentWeekEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // Fallback: If current week isn't in list (rare), scroll to bottom
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    }, 500); // Small delay to allow images/DOM to load
 }
 
 function renderSidebarWeeks() {
@@ -658,4 +676,178 @@ function resetWallpaper() {
     localStorage.removeItem('moodboard_global_bg');
     document.body.style.backgroundImage = '';
     closeAllModals();
+}
+/* =========================================
+   CAPACITOR NOTIFICATION LOGIC
+   ========================================= */
+
+let remindersEnabled = false;
+
+// 1. Check if we are in an App or Browser on Load
+async function checkReminderStatus() {
+    const btn = document.getElementById('reminderBtn');
+    const savedStatus = localStorage.getItem('moodboard_reminders');
+    
+    if (savedStatus === 'true') {
+        remindersEnabled = true;
+        btn.innerText = "Disable Reminders 🔕";
+        btn.style.background = "#ffccbc"; // Red-ish
+    } else {
+        remindersEnabled = false;
+        btn.innerText = "Enable Reminders 💧";
+        btn.style.background = "#81d4fa"; // Blue-ish
+    }
+}
+
+// 2. The Main Toggle Function
+async function toggleReminders() {
+    const btn = document.getElementById('reminderBtn');
+    const intervalMinutes = parseInt(document.getElementById('reminderInterval').value);
+
+    if (!remindersEnabled) {
+        // --- TURN ON ---
+        try {
+            // Check if Capacitor is available (App Mode)
+            if (window.Capacitor) {
+                const LocalNotifications = Capacitor.Plugins.LocalNotifications;
+                
+                // Request Permission first
+                const perm = await LocalNotifications.requestPermissions();
+                if (perm.display !== 'granted') {
+                    alert("Permission denied. Cannot send notifications.");
+                    return;
+                }
+
+                // Schedule the notification
+                await LocalNotifications.schedule({
+                    notifications: [
+                        {
+                            title: "Hydration Check! 💧",
+                            body: "Time to drink water and have a snack! 🍎",
+                            id: 1,
+                            schedule: { 
+                                on: { minute: 0 }, // Repeating logic handled below for simple intervals
+                                every: 'hour' // For simplicity in this demo, we set basic repeat
+                            },
+                            sound: null,
+                            attachments: null,
+                            actionTypeId: "",
+                            extra: null
+                        }
+                    ]
+                });
+
+                // NOTE: Detailed custom intervals (like 90 mins) require more complex setup 
+                // in Capacitor, but 'every hour' is the most stable for a starter app.
+                // We will delete any existing and create a recurring one.
+                
+                await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
+                
+                // Create a recurring notification based on minutes
+                // Since Capacitor 'every' is limited, we will just set a simple one for now
+                // that repeats every time the minute hits the current minute (not ideal, but works for v1)
+                // A better approach for exact minutes is "allowWhileIdle" in Android config.
+                
+                // Let's stick to a simple Immediate + interval approach using JS if app is open,
+                // and Background fetch if closed. 
+                // ACTUALLY, simpler approach for your girlfriend:
+                
+                await LocalNotifications.schedule({
+                    notifications: [{
+                        title: "Take a break! 💧",
+                        body: "Drink water & eat food!",
+                        id: 100,
+                        schedule: { at: new Date(Date.now() + 1000 * 60 * intervalMinutes), repeats: true }
+                    }]
+                });
+
+                alert(`Reminders set for every ${intervalMinutes} minutes!`);
+
+            } else {
+                alert("This only works fully inside the Android App! On browser, this is just a test.");
+            }
+
+            // Update UI
+            remindersEnabled = true;
+            localStorage.setItem('moodboard_reminders', 'true');
+            btn.innerText = "Disable Reminders 🔕";
+            btn.style.background = "#ffccbc";
+            
+        } catch (e) {
+            console.error(e);
+            alert("Error setting notification. Make sure you are in the App.");
+        }
+
+    } else {
+        // --- TURN OFF ---
+        try {
+            if (window.Capacitor) {
+                await Capacitor.Plugins.LocalNotifications.cancel({ notifications: [{ id: 100 }] });
+            }
+        } catch (e) { console.log("No notifications to cancel"); }
+
+        remindersEnabled = false;
+        localStorage.setItem('moodboard_reminders', 'false');
+        btn.innerText = "Enable Reminders 💧";
+        btn.style.background = "#81d4fa";
+        alert("Reminders disabled.");
+    }
+}
+
+// Add this to your existing window.onload function at the top of script.js
+// Look for window.onload = function() { ... 
+// Add this line inside it: checkReminderStatus();
+function openViewModal(item) {
+    const modal = document.getElementById('viewModal');
+    const card = document.getElementById('viewNoteCard');
+    const tape = document.getElementById('viewTapeDisplay');
+    const text = document.getElementById('viewNoteText');
+    const moodCont = document.getElementById('viewMoodContainer');
+    const polaroid = document.getElementById('viewPolaroidContainer');
+    const photo = document.getElementById('viewNoteImage');
+
+    // 1. Apply Background Paper
+    if(item.paperUrl) {
+        if(item.paperUrl.includes('url')) {
+            card.style.background = item.paperUrl;
+        } else {
+            card.style.background = '';
+            card.style.backgroundColor = item.paperUrl;
+        }
+    } else {
+        card.style.background = '#fff';
+    }
+
+    // 2. Apply Tape
+    if(item.tapeUrl) {
+        tape.style.backgroundColor = 'transparent';
+        tape.style.backgroundImage = `url('${item.tapeUrl}')`;
+    } else {
+        tape.style.backgroundImage = '';
+        tape.style.backgroundColor = 'rgba(100, 221, 231, 0.6)';
+    }
+
+    // 3. Text & Font
+    text.innerText = item.text || "";
+    text.style.fontFamily = item.fontFamily || 'Gaegu';
+    text.style.color = item.fontColor || '#444';
+
+    // 4. Mood
+    if(item.moodImg && item.moodName) {
+        moodCont.innerHTML = `<img src="${item.moodImg}"><span>${item.moodName}</span>`;
+        moodCont.style.display = 'flex';
+    } else {
+        moodCont.style.display = 'none';
+    }
+
+    // 5. Photo
+    if(item.imgUrl) {
+        photo.src = item.imgUrl;
+        polaroid.style.display = 'block';
+    } else {
+        polaroid.style.display = 'none';
+    }
+
+    modal.style.display = 'flex';
+    document.getElementById('overlay').style.display = 'block';
 }
