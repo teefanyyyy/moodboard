@@ -1,20 +1,18 @@
-const TITLE_IMAGE_SRC = "./title.png";
+const TITLE_IMAGE_SRC = "./assets/title.png";
         
 const CUSTOM_MOODS = [
-    { name: "hapi", src: "./hapi.png" },
-    { name: "hapi with ethan", src: "./hapi with ethan.png" },
-    { name: "sad", src: "./sad.png" },
-    { name: "tampo", src: "./tampo.png" },
-    { name: "angy", src: "./angy.png" },
-    { name: "meh", src: "./meh.png" },
-    { name: "yap", src: "./yap.png" }
+    { name: "hapi", src: "./assets/hapi.png" },
+    { name: "hapi with ethan", src: "./assets/hapi with ethan.png" },
+    { name: "sad", src: "./assets/sad.png" },
+    { name: "tampo", src: "./assets/tampo.png" },
+    { name: "angy", src: "./assets/angy.png" },
+    { name: "meh", src: "./assets/meh.png" },
+    { name: "yap", src: "./assets/yap.png" }
 ];
 
 /* --- DEFAULT PRESETS --- */
 const DEFAULT_TAPES = [
-    { id: 'tape1', src: '' }, 
-    { id: 'tape2', src: 'https://img.freepik.com/free-png/washi-tape-strip-patterned-design-element_53876-115383.jpg' },
-    { id: 'tape3', src: 'https://img.freepik.com/free-vector/grid-washi-tape-vector-strip-cute-stationery-blue_53876-145694.jpg' }
+    { id: 'tape1', src: '' }
 ];
 const DEFAULT_PAPERS = [
     { id: 'white', bg: '#fff' },
