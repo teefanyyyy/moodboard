@@ -117,7 +117,23 @@
             </div>
         </div>
     </div>
-
+<!-- VIEW ONLY MODAL (NEW) -->
+    <div id="viewModal" class="modal" onclick="closeAllModals()">
+        <!-- We stop propagation on the container so clicking the note doesn't close it, only clicking outside does -->
+        <div class="view-note-card" id="viewNoteCard" onclick="event.stopPropagation()">
+            <div class="view-tape" id="viewTapeDisplay"></div>
+            <div class="view-scroll-area">
+                <div id="viewNoteText" class="view-text-content"></div>
+                <div class="view-footer">
+                    <div id="viewMoodContainer" class="mood-tag" style="transform: scale(1.2); transform-origin: left bottom;"></div>
+                    <div id="viewPolaroidContainer" class="note-polaroid" style="transform: rotate(2deg); width:120px; height:120px;">
+                        <img id="viewNoteImage" src="" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                </div>
+            </div>
+            <button class="close-view-btn" onclick="closeAllModals()">Close</button>
+        </div>
+    </div>
     <!-- DRAW MODAL -->
     <div id="drawModal" class="modal">
         <div class="modal-draw-content">
@@ -155,8 +171,40 @@
             </div>
         </div>
     </div>
+    <!-- UPDATED SETTINGS MODAL -->
+<div id="settingsModal" class="modal">
+    <div class="confirm-box" style="width:340px;">
+        <h3>⚙️ Settings</h3>
+        
+        <!-- NEW: HEALTH REMINDERS SECTION -->
+        <div style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;">
+            <h4>Health Reminders 💧</h4>
+            <p style="font-size: 0.9rem; color:#666;">Sends notifications even if app is closed.</p>
+            <div style="margin-bottom:10px;">
+                <label>Interval:</label>
+                <select id="reminderInterval" style="padding:5px; border-radius:5px;">
+                    <option value="30">Every 30 Mins</option>
+                    <option value="60" selected>Every 1 Hour</option>
+                    <option value="120">Every 2 Hours</option>
+                </select>
+            </div>
+            <button id="reminderBtn" class="action-btn" style="background:#81d4fa; width:100%;" onclick="toggleReminders()">Enable Reminders</button>
+        </div>
 
-    <div id="settingsModal" class="modal"><div class="confirm-box" style="width:340px;"><h3>⚙️ Settings</h3><div style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;"><h4>App Wallpaper 🏠</h4><button class="action-btn" onclick="document.getElementById('wallUpload').click()">Upload Image</button><input type="file" id="wallUpload" accept="image/*" style="display:none" onchange="uploadWallpaper(this)"><button class="action-btn" style="background:#ffccbc;" onclick="resetWallpaper()">Reset</button></div><p style="color:#777; font-size:1rem;">Danger Zone</p><button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button><br><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
+        <!-- EXISTING WALLPAPER SECTION -->
+        <div style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;">
+            <h4>App Wallpaper 🏠</h4>
+            <button class="action-btn" onclick="document.getElementById('wallUpload').click()">Upload Image</button>
+            <input type="file" id="wallUpload" accept="image/*" style="display:none" onchange="uploadWallpaper(this)">
+            <button class="action-btn" style="background:#ffccbc;" onclick="resetWallpaper()">Reset</button>
+        </div>
+
+        <!-- DANGER ZONE -->
+        <p style="color:#777; font-size:1rem;">Danger Zone</p>
+        <button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button>
+        <br><br>
+        <button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button>
+    </div>
     <div id="confirmModal" class="modal"><div class="confirm-box"><div class="confirm-msg" id="confirmMsg">Are you sure?</div><div class="confirm-actions"><button class="cancel-btn" onclick="closeConfirm(false)">No</button><button class="save-btn" style="background:#ef5350; color:white;" onclick="closeConfirm(true)">Yes</button></div></div></div>
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     
@@ -175,7 +223,6 @@
     <script src="script.js"></script>
 </body>
 </html>
-
 
 
 
