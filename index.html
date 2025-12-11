@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Mood Board ❤️</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- FIREBASE SCRIPTS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap');
+
+        :root {
+            --bg-wall: #8d6e63;
+            --c-accent: #FFD1DC;
+            --c-dark: #5d4037;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; background-color: var(--bg-wall);
+            font-family: 'Gaegu', cursive;
+            overscroll-behavior: none; user-select: none; -webkit-user-select: none;
+        }
+
+        /* --- HEADER --- */
+        .header-container { text-align: center; margin: 20px 0; display: flex; justify-content: center; }
+        .main-header-img { max-width: 85%; height: auto; max-height: 150px; filter: drop-shadow(3px 3px 0px #5d4037); transition: transform 0.2s; }
+        .main-header-img:hover { transform: scale(1.02); }
+
+        /* --- NAVIGATION --- */
+        .hamburger { position: fixed; top: 10px; left: 10px; background: white; padding: 8px 12px; font-size: 1.5rem; border-radius: 10px; cursor: pointer; z-index: 2000; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border: 2px solid var(--c-dark); }
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2001; top: 0; left: 0; background-color: #fff3e0; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+        .sidebar a { padding: 15px 30px; text-decoration: none; font-size: 1.5rem; color: var(--c-dark); display: block; }
+        .sidebar-section { padding: 20px 30px; border-top: 1px dashed #ccc; margin-top: 10px; }
+        .sidebar-title { font-weight: bold; margin-bottom: 10px; color: var(--c-dark); }
+        .bg-option { display: inline-block; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #555; margin-right: 10px; cursor: pointer; }
+        .bg-cork { background: #bcaaa4; } .bg-grid { background: white; background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px); background-size: 10px 10px; } .bg-pink { background: #f8bbd0; } .bg-clouds { background: #e3f2fd; }
+        .sidebar-btn { margin: 20px 30px; padding: 10px; background: #ef5350; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 1.2rem; cursor: pointer; }
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; }
+
+        /* --- LAYOUT --- */
+        .week-section { margin-bottom: 50px; }
+        .week-header { padding: 0 15px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; }
+        .board-actions { display: flex; gap: 8px; }
+        .action-btn { background: white; border: 2px solid var(--c-dark); border-radius: 15px; padding: 5px 10px; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.2); transition: 0.1s; font-size: 0.9rem; }
+        .action-btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn-note { background: #fff9c4; } .btn-draw { background: #b3e5fc; } .btn-bg { background: #e0e0e0; }
+
+        /* --- BOARD --- */
+        .goals-strip { width: 95%; margin: 0 auto; background: #fff; min-height: 80px; border-radius: 5px 5px 0 0; position: relative; background-image: linear-gradient(#cfd8dc 1px, transparent 1px); background-size: 100% 25px; padding: 10px 20px; box-shadow: 0 -2px 5px rgba(0,0,0,0.2); z-index: 5; }
+        .goals-strip::before { content: ''; position: absolute; top: -15px; left: 0; width: 100%; height: 20px; background: radial-gradient(circle, #333 30%, transparent 40%); background-size: 30px 30px; }
+        .goal-header { font-weight: bold; color: #ff7043; text-decoration: underline; margin-bottom: 5px; }
+        .goal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 15px; }
+        .goal-list li { display: flex; align-items: center; gap: 5px; font-size: 1.1rem; background: rgba(255,255,255,0.8); padding: 0 5px; border-radius: 5px;}
+        .goal-add-btn { background: var(--c-accent); border: 1px solid #aaa; border-radius: 10px; padding: 2px 10px; font-family: inherit; margin-top: 5px; font-size: 1rem; }
+
+        .board-container { width: 100%; height: 50vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; }
+        .board-bg-cork { background-color: #bcaaa4 !important; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png') !important; background-size: auto !important; }
+        .board-bg-grid { background-color: #fdfdfd !important; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px) !important; background-size: 30px 30px !important; }
+        .board-bg-pink { background-color: #f8bbd0 !important; background-image: radial-gradient(#f48fb1 2px, transparent 2px) !important; background-size: 20px 20px !important; }
+        .board-bg-clouds { background-color: #e3f2fd !important; background-image: radial-gradient(white 20%, transparent 20%), radial-gradient(white 20%, transparent 20%) !important; background-position: 0 0, 50px 50px !important; background-size: 100px 100px !important; }
+        .board-inner { width: 2000px; height: 100%; position: relative; }
+
+        .draggable-item { position: absolute; display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; touch-action: none; overflow: visible !important; }
+        .draggable-item.selected { z-index: 1000 !important; }
+
+        /* FIXED NOTE STYLE */
+        .note-paper {
+            background-color: #fff;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            padding: 35px 15px 15px 55px; 
+            width: 100%; height: 100%;
+            overflow: hidden; display: flex; flex-direction: column; 
+            color: #444; font-size: 1.3rem;
+        }
+        .note-paper::after {
+            content: ''; position: absolute; top: 0; left: 10px; width: 35px; height: 100%;
+            background-image: radial-gradient(circle, #5d4037 8px, transparent 9px);
+            background-size: 100% 40px; background-position: center 25px;
+            background-repeat: repeat-y; opacity: 0.9; pointer-events: none;
+        }
+        .tape { width: 100px; height: 28px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-1deg); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .note-text-area { flex-grow: 1; word-wrap: break-word; line-height: 1.2; }
+        .note-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; }
+        
+        /* --- NEW SMALL MOOD STYLE --- */
+        .mood-tag {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            opacity: 0.9;
+        }
+        .mood-tag img {
+            width: 25px; /* Small icon size */
+            height: 25px;
+            object-fit: contain;
+        }
+        .mood-tag span {
+            font-size: 1.2rem;
+            color: #ff8a80; /* Pinkish color like "hapi" */
+            font-weight: bold;
+        }
+        
+        .note-polaroid { width: 90px; height: 90px; background: white; border: 4px solid white; box-shadow: 1px 1px 4px rgba(0,0,0,0.2); transform: rotate(3deg); }
+        .note-polaroid img { width: 100%; height: 100%; object-fit: cover; }
+        .sticker-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+        .sticker-border .sticker-img { filter: drop-shadow(2px 2px 0 white) drop-shadow(-2px -2px 0 white) drop-shadow(2px -2px 0 white) drop-shadow(-2px 2px 0 white) drop-shadow(2px 0px 0 white) drop-shadow(-2px 0px 0 white) drop-shadow(0px 2px 0 white) drop-shadow(0px -2px 0 white); }
+
+        /* HANDLES */
+        .control-handle { width: 35px; height: 35px; border: 2px solid white; border-radius: 50%; position: absolute; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 200; display: none; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; }
+        .draggable-item.selected .control-handle { display: flex; }
+        .resize-handle { background-color: var(--c-accent); right: -12px; bottom: -12px; cursor: se-resize; }
+        .rotate-handle { background-color: #64b5f6; left: 50%; top: -50px; transform: translateX(-50%); cursor: grab; }
+        .rotate-handle::after { content:''; position:absolute; top:32px; height:18px; width:2px; background:white; pointer-events:none;}
+        .delete-handle { background-color: #ef5350; right: -12px; top: -12px; color: white; }
+        .edit-handle { background-color: #ffee58; left: -12px; top: -12px; color: #5d4037; }
+
+        /* --- MODALS --- */
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; flex-direction: column; align-items: center; }
+        .confirm-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 20px; width: 300px; text-align: center; }
+        .confirm-msg { font-size: 1.5rem; margin-bottom: 20px; color: #444; }
+        .confirm-actions { display: flex; gap: 10px; }
+
+        /* NOTE EDITOR */
+        .note-editor { background-color: #fff; width: 320px; height: 480px; padding: 40px 20px 20px 60px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+        .note-editor::after { content: ''; position: absolute; top: 0; left: 20px; width: 25px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 20px; background-repeat: repeat-y; opacity: 0.9; pointer-events: none; }
+        .editor-tape { width: 120px; height: 35px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(2deg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        #editorText { flex-grow: 1; border: none; outline: none; resize: none; font-family: 'Gaegu', cursive; font-size: 1.5rem; color: #444; background: transparent; line-height: 1.5; }
+        .editor-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; min-height: 80px; }
+        
+        /* Mood Selector in Editor */
+        .mood-grid { display: flex; gap: 10px; flex-wrap: wrap; width: 160px; }
+        .mood-option-container { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+        .mood-btn { width: 35px; height: 35px; border: 2px solid transparent; border-radius: 50%; object-fit: contain; transition: transform 0.1s; padding: 2px; background: #fff; }
+        .mood-btn:hover { transform: scale(1.1); }
+        .mood-btn.selected { border-color: var(--c-dark); background: #b3e5fc; transform: scale(1.1); }
+        .mood-label-small { font-size: 0.8rem; color: #777; margin-top: -2px;}
+
+        .editor-photo-box { width: 80px; height: 80px; border: 2px dashed #ccc; background: #f9f9f9; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; transform: rotate(-2deg); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+        #editorImgPreview { width: 100%; height: 100%; object-fit: cover; border: 4px solid white; display: none; }
+        .editor-buttons { display: flex; gap: 10px; margin-top: 20px; width: 300px; }
+        .save-btn { flex: 1; padding: 12px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: var(--c-accent); border: 2px solid var(--c-dark); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+        .cancel-btn { padding: 12px 20px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: white; border: 2px solid var(--c-dark); }
+        .sticker-mode-area { margin-top: 15px; width: 100%; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center; }
+        .sticker-link { color: white; cursor: pointer; text-decoration: underline; font-weight: bold; font-size: 1.1rem; }
+        .sticker-option { margin-top: 5px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        /* STATS & BG MODAL */
+        .stats-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 25px; width: 320px; font-size: 1.2rem; }
+        .stat-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .stat-label { width: 100px; }
+        .stat-bar-container { flex-grow: 1; height: 15px; background: #eee; border-radius: 10px; overflow: hidden; margin: 0 10px; }
+        .stat-bar { height: 100%; background: var(--c-accent); width: 0%; transition: width 0.5s; }
+        .stat-pct { width: 40px; text-align: right; font-weight: bold; }
+        .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
+        .bg-upload-btn { grid-column: span 2; background: #e0e0e0; border: 2px dashed #888; color: #555; }
+
+        /* DRAW MODAL STYLES */
+        .modal-draw-content { background: white; padding: 15px; border-radius: 20px; border: 3px solid var(--c-dark); width: 95%; max-width: 400px; }
+        .ibis-picker-container { display: flex; flex-direction: column; align-items: center; gap: 10px; background: #444; padding: 15px; border-radius: 15px; color: white; margin-bottom: 10px; }
+        .picker-area { position: relative; width: 220px; height: 220px; }
+        .hue-ring { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); position: absolute; top: 0; left: 0; cursor: crosshair; }
+        .hue-ring::after { content: ''; position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; background: #444; border-radius: 50%; pointer-events: none; }
+        .sv-square { position: absolute; top: 27%; left: 27%; width: 46%; height: 46%; background-color: red; cursor: crosshair; }
+        .sv-white { width: 100%; height: 100%; background: linear-gradient(to right, #fff, rgba(255,255,255,0)); }
+        .sv-black { width: 100%; height: 100%; background: linear-gradient(to top, #000, rgba(0,0,0,0)); }
+        .hue-indicator { position: absolute; width: 10px; height: 10px; border: 2px solid white; border-radius: 50%; pointer-events: none; box-shadow: 0 0 2px black; }
+        .sv-indicator { position: absolute; width: 8px; height: 8px; border: 2px solid black; border-radius: 50%; background: white; pointer-events: none; }
+        .slider-row { display: flex; align-items: center; gap: 5px; width: 100%; font-size: 0.8rem; }
+        input[type="range"].color-slider { flex-grow: 1; height: 5px; -webkit-appearance: none; border-radius: 5px; }
+        input[type="range"].color-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: white; border: 1px solid #777;}
+        .preview-box { width: 40px; height: 40px; border: 2px solid white; border-radius: 5px; background: #000; }
+        .canvas-container { border: 2px dashed #ccc; background: white; width: 100%; height: 250px; overflow: hidden; touch-action: none; }
+        .brush-rack { display: flex; gap: 5px; justify-content: space-between; margin-bottom: 5px; }
+        .brush-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #ddd; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .brush-btn.active { background: var(--c-accent); border: 2px solid var(--c-dark); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleNav()">×</a>
+        <div style="text-align:center; font-size:2rem; margin-bottom:20px;">📅 Weeks</div>
+        <a href="#week-1" onclick="toggleNav()">Dec 1 - 7</a>
+        <a href="#week-2" onclick="toggleNav()">Dec 8 - 14</a>
+        <div class="sidebar-section">
+            <div class="sidebar-title" onclick="openStatsModal()" style="cursor:pointer; background:#e1f5fe; padding:10px; border-radius:10px; text-align:center;">📊 View Mood Stats</div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Background</div>
+            <div class="bg-option bg-cork" onclick="setBoardBg('cork')"></div>
+            <div class="bg-option bg-grid" onclick="setBoardBg('grid')"></div>
+            <div class="bg-option bg-pink" onclick="setBoardBg('pink')"></div>
+            <div class="bg-option bg-clouds" onclick="setBoardBg('clouds')"></div>
+        </div>
+        <button class="sidebar-btn" onclick="askReset()">⚠️ Reset All</button>
+    </div>
+
+    <button class="hamburger" onclick="toggleNav()">☰</button>
+    
+    <!-- HEADER IMAGE -->
+    <div class="header-container">
+        <!-- JS will inject the image here -->
+        <img id="mainTitleImage" class="main-header-img" alt="Mood Board">
+    </div>
+
+    <div id="main-content" style="padding-bottom: 100px;">
+        <div class="week-section" id="week-1">
+            <div class="week-header">
+                <div class="week-title">December 1 - 7</div>
+                <div class="board-actions">
+                    <button class="action-btn btn-note" onclick="openNoteEditor('board-week-1')">📝 Sticky</button>
+                    <button class="action-btn btn-draw" onclick="openDrawModal('board-week-1')">🎨 Paint</button>
+                    <button class="action-btn btn-bg" onclick="openBgModal('board-week-1')">🖼️ BG</button>
+                </div>
+            </div>
+            <div class="goals-strip">
+                <div class="goal-header">Weekly Goals <button class="goal-add-btn" onclick="addGoal('goals-week-1')">+ Add</button></div>
+                <ul class="goal-list" id="goals-week-1"></ul>
+            </div>
+            <div class="board-container" id="board-week-1-container">
+                <div class="board-inner" id="board-week-1" onclick="deselectAll(event)"></div>
+            </div>
+        </div>
+
+        <div class="week-section" id="week-2">
+            <div class="week-header">
+                <div class="week-title">December 8 - 14</div>
+                <div class="board-actions">
+                    <button class="action-btn btn-note" onclick="openNoteEditor('board-week-2')">📝 Sticky</button>
+                    <button class="action-btn btn-draw" onclick="openDrawModal('board-week-2')">🎨 Paint</button>
+                    <button class="action-btn btn-bg" onclick="openBgModal('board-week-2')">🖼️ BG</button>
+                </div>
+            </div>
+            <div class="goals-strip">
+                <div class="goal-header">Weekly Goals <button class="goal-add-btn" onclick="addGoal('goals-week-2')">+ Add</button></div>
+                <ul class="goal-list" id="goals-week-2"></ul>
+            </div>
+            <div class="board-container" id="board-week-2-container">
+                <div class="board-inner" id="board-week-2" onclick="deselectAll(event)"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="overlay" onclick="closeAllModals()"></div>
+
+    <!-- NOTE/STICKER EDITOR -->
+    <div id="noteEditorModal" class="modal">
+        <div class="note-editor">
+            <div class="editor-tape"></div>
+            <textarea id="editorText" placeholder="Dear Diary..." autofocus></textarea>
+            <div class="editor-footer">
+                <!-- CUSTOM MOOD IMAGES -->
+                <div id="moodGrid" class="mood-grid"></div>
+                
+                <input type="file" id="editorFileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(this)">
+                <div class="editor-photo-box" onclick="document.getElementById('editorFileInput').click()">
+                    <span class="editor-photo-label" id="photoLabel">+ Pic</span>
+                    <img id="editorImgPreview" src="" alt="preview">
+                </div>
+            </div>
+        </div>
+        <div class="editor-buttons">
+            <button class="cancel-btn" onclick="closeAllModals()">Cancel</button>
+            <button class="save-btn" onclick="saveFromEditor('note')">Stick It! 📌</button>
+        </div>
+        <div class="sticker-mode-area">
+            <div class="sticker-link" onclick="saveFromEditor('sticker')">Or save as Transparent Sticker</div>
+            <div class="sticker-option">
+                <input type="checkbox" id="stickerBorderCheck" checked> 
+                <label for="stickerBorderCheck">Add White Outline?</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRAW MODAL -->
+    <div id="drawModal" class="modal">
+        <div class="modal-draw-content">
+            <h3 id="drawModalTitle" style="margin:0 0 10px 0; text-align:center;">Art Studio 🎨</h3>
+            <div class="brush-rack">
+                <div class="brush-btn active" onclick="setBrush('pen', this)">🖊️</div>
+                <div class="brush-btn" onclick="setBrush('marker', this)">🖍️</div>
+                <div class="brush-btn" onclick="setBrush('spray', this)">💨</div>
+                <div class="brush-btn" onclick="setBrush('eraser', this)">🧼</div>
+                <div class="brush-btn" onclick="toggleColorPicker()" style="background:#444; color:white;">🌈</div>
+            </div>
+            <div id="ibisPicker" class="ibis-picker-container" style="display:none;">
+                <div class="picker-area">
+                    <div class="hue-ring" id="hueRing"><div class="hue-indicator" id="hueInd"></div></div>
+                    <div class="sv-square" id="svSquare"><div class="sv-white"><div class="sv-black"></div></div><div class="sv-indicator" id="svInd"></div></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; width:100%;">
+                    <div class="preview-box" id="colorPreview"></div>
+                    <div style="flex-grow:1; display:flex; flex-direction:column; gap:5px;">
+                        <div class="slider-row"><span style="color:red">R</span> <input type="range" class="color-slider" id="rSlider" min="0" max="255" style="background: linear-gradient(to right, black, red);"></div>
+                        <div class="slider-row"><span style="color:green">G</span> <input type="range" class="color-slider" id="gSlider" min="0" max="255" style="background: linear-gradient(to right, black, green);"></div>
+                        <div class="slider-row"><span style="color:blue">B</span> <input type="range" class="color-slider" id="bSlider" min="0" max="255" style="background: linear-gradient(to right, black, blue);"></div>
+                    </div>
+                </div>
+                <button onclick="toggleColorPicker()" style="width:100%; padding:5px; background:#666; color:white; border:none;">Close</button>
+            </div>
+            <div class="canvas-container"><canvas id="drawCanvas"></canvas></div>
+            <div style="margin-top:10px;">
+                <label>Size: <span id="sizeVal">5</span>px</label>
+                <input type="range" id="drawSize" min="1" max="30" value="5" style="width:100%; accent-color:var(--c-accent);">
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                <button onclick="clearCanvas()" style="background:#ffcdd2; border:none; padding:5px 10px; border-radius:5px;">Clear</button>
+                <button onclick="saveDrawing()" style="background:#c8e6c9; border:none; padding:5px 15px; border-radius:5px; font-weight:bold;">Done!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTHER MODALS -->
+    <div id="confirmModal" class="modal"><div class="confirm-box"><div class="confirm-msg" id="confirmMsg">Are you sure?</div><div class="confirm-actions"><button class="cancel-btn" onclick="closeConfirm(false)">No</button><button class="save-btn" style="background:#ef5350; color:white;" onclick="closeConfirm(true)">Yes</button></div></div></div>
+    <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
+    <div id="bgModal" class="modal"><div class="modal-draw-content" style="text-align:center;"><h3>Choose Background 🖼️</h3><div class="bg-grid-container"><div class="bg-btn bg-cork" onclick="setBoardBg('cork')">Cork</div><div class="bg-btn bg-grid" onclick="setBoardBg('grid')">Grid</div><div class="bg-btn bg-pink" onclick="setBoardBg('pink')">Pink</div><div class="bg-btn bg-clouds" onclick="setBoardBg('clouds')">Clouds</div><input type="file" id="bgFileInput" accept="image/*" style="display:none;" onchange="handleBgUpload(this)"><div class="bg-btn bg-upload-btn" onclick="document.getElementById('bgFileInput').click()">⬆️ Upload Photo</div></div><br><button class="cancel-btn" onclick="closeAllModals()">Close</button></div></div>
+
+    <script>
+        /* 
+           =========================================================
+           🎨 CUSTOM CONFIGURATION AREA
+           =========================================================
+        */
+
+        const TITLE_IMAGE_SRC = "https://fontmeme.com/permalink/231211/a8596068ce879003632970959067963d.png";
+
+        // ICONS: Replace the 'src' links with your own images if you want!
+        const CUSTOM_MOODS = [
+            { name: "happy", src: "https://cdn-icons-png.flaticon.com/128/166/166538.png" },
+            { name: "loved", src: "https://cdn-icons-png.flaticon.com/128/210/210545.png" },
+            { name: "sad", src: "https://cdn-icons-png.flaticon.com/128/166/166549.png" },
+            { name: "angry", src: "https://cdn-icons-png.flaticon.com/128/1791/1791330.png" },
+            { name: "tired", src: "https://cdn-icons-png.flaticon.com/128/166/166527.png" }
+        ];
+
+        // ⚠️ PASTE YOUR FIREBASE CONFIG HERE LATER ⚠️
+        const firebaseConfig = {
+            // apiKey: "...",
+            // authDomain: "...",
+            // projectId: "...",
+            // storageBucket: "...",
+            // messagingSenderId: "...",
+            // appId: "..."
+        }; 
+
+        /* --- APP LOGIC --- */
+        let db=null; let useFirebase=false; let items=[]; let goals={}; let boardBgs={}; 
+        let pickedColor={h:0,s:100,v:0,r:0,g:0,b:0,hex:"#000000"}; 
+        let editingItemId=null; let currentActiveWeek=''; let currentEditorImage=null; let confirmCallback=null;
+        
+        let selectedMoodSrc = null;
+
+        window.onload = function() {
+            document.getElementById('mainTitleImage').src = TITLE_IMAGE_SRC;
+            
+            initMoodSelector();
+            if(firebaseConfig.apiKey){firebase.initializeApp(firebaseConfig);db=firebase.firestore();useFirebase=true;loadFromFirebase();}else{loadFromLocal();}
+            initColorPicker(); document.getElementById('drawSize').addEventListener('input',(e)=>document.getElementById('sizeVal').innerText=e.target.value);
+        };
+
+        function initMoodSelector(){ 
+            const container = document.getElementById('moodGrid');
+            container.innerHTML = '';
+            CUSTOM_MOODS.forEach(opt => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mood-option-container';
+                wrapper.onclick = () => selectMood(opt.src, wrapper.querySelector('img'));
+
+                const img = document.createElement('img');
+                img.src = opt.src;
+                img.title = opt.name;
+                img.className = 'mood-btn';
+                
+                const span = document.createElement('span');
+                span.className = 'mood-label-small';
+                span.innerText = opt.name;
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(span);
+                container.appendChild(wrapper);
+            });
+        }
+
+        function selectMood(src, imgElement) {
+            selectedMoodSrc = src;
+            document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
+            imgElement.classList.add('selected');
+        }
+
+        function loadFromLocal(){ if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); renderApp(); }
+        function loadFromFirebase(){ db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();if(document.getElementById('statsModal').style.display==='flex')calculateStats();}); db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); }
+        function saveData(t){ if(!useFirebase){ if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); return; } if(t==='goals')db.collection("data").doc("goals").set(goals); if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); }
+        function renderApp(){renderAllItems();renderGoals();applyAllBoardBgs();}
+
+        function openNoteEditor(weekIdOrItem) {
+            const modal = document.getElementById('noteEditorModal'); const txt = document.getElementById('editorText'); const preview = document.getElementById('editorImgPreview'); const label = document.getElementById('photoLabel');
+            currentEditorImage = null; selectedMoodSrc = null;
+            preview.style.display = 'none'; label.style.display = 'block'; document.getElementById('editorFileInput').value = '';
+            
+            document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
+
+            if (typeof weekIdOrItem === 'string') { currentActiveWeek = weekIdOrItem; editingItemId = null; txt.value = ""; } 
+            else { 
+                const item = weekIdOrItem; editingItemId = item.id; currentActiveWeek = item.weekId; txt.value = item.text || ""; 
+                if(item.moodImg) {
+                    selectedMoodSrc = item.moodImg;
+                    const match = Array.from(document.querySelectorAll('.mood-btn')).find(img => img.src === item.moodImg);
+                    if(match) match.classList.add('selected');
+                }
+                if(item.imgUrl) { currentEditorImage = item.imgUrl; preview.src = item.imgUrl; preview.style.display = 'block'; label.style.display = 'none'; } 
+            }
+            modal.style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; txt.focus();
+        }
+
+        function saveFromEditor(type) {
+            const text = document.getElementById('editorText').value; 
+            const hasBorder = document.getElementById('stickerBorderCheck').checked;
+            
+            let moodName = "Unknown";
+            const moodObj = CUSTOM_MOODS.find(m => m.src === selectedMoodSrc);
+            if(moodObj) moodName = moodObj.name;
+
+            const newItem = { 
+                id: editingItemId || Date.now(), 
+                type, text, 
+                moodName: selectedMoodSrc ? moodName : null,
+                moodImg: selectedMoodSrc, 
+                imgUrl: currentEditorImage, 
+                weekId: currentActiveWeek, 
+                x: 50, y: 50, w: 220, h: 260, rot: 0,
+                hasBorder: hasBorder
+            };
+
+            if (editingItemId) {
+                const existing = items.find(i => i.id === editingItemId);
+                if(existing) {
+                    newItem.x = existing.x; newItem.y = existing.y; newItem.w = existing.w; newItem.h = existing.h; newItem.rot = existing.rot;
+                    const idx = items.indexOf(existing); items[idx] = newItem;
+                }
+            } else { items.push(newItem); }
+
+            if(useFirebase) db.collection("items").doc(String(newItem.id)).set(newItem); else { saveData('items'); renderAllItems(); }
+            closeAllModals();
+        }
+
+        function saveDrawing() {
+            const dataURL = canvas.toDataURL();
+            const item={id:Date.now(),type:'sticker',text:'',moodName:'',imgUrl:dataURL,weekId:currentActiveWeek,x:50,y:50,w:200,h:200,rot:0,hasBorder:true}; 
+            if(useFirebase) db.collection("items").doc(String(item.id)).set(item); else { items.push(item); saveData('items'); renderAllItems(); } 
+            closeAllModals(); clearCanvas();
+        }
+
+        function createDOMItem(item) {
+            const board = document.getElementById(item.weekId); if(!board) return;
+            const div = document.createElement('div'); div.classList.add('draggable-item');
+            div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
+            div.style.transform = `rotate(${item.rot}deg)`; div.style.zIndex = 1;
+            let content = `<div class="control-handle resize-handle">↘</div><div class="control-handle rotate-handle"></div><div class="control-handle delete-handle">✖</div>`;
+            if(item.type === 'note') content += `<div class="control-handle edit-handle">✎</div>`;
+            
+            if(item.type === 'note') {
+                let moodContent = '';
+                // NEW: Small icon + text format
+                if(item.moodImg && item.moodName) {
+                    moodContent = `<div class="mood-tag"><img src="${item.moodImg}"><span>${item.moodName}</span></div>`;
+                }
+                
+                content += `<div class="inner-content note-paper"><div class="tape"></div><div class="note-text-area">${item.text}</div><div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div></div>`;
+            } else {
+                const borderClass = item.hasBorder ? 'sticker-border' : '';
+                if(item.imgUrl) content += `<div class="inner-content ${borderClass}"><img src="${item.imgUrl}" class="sticker-img"></div>`;
+            }
+            div.innerHTML = content;
+            setupItemEvents(div, item);
+            board.appendChild(div);
+        }
+
+        function setupItemEvents(div, item) {
+            div.addEventListener('mousedown', startDrag); div.addEventListener('touchstart', startDrag, {passive: false});
+            div.addEventListener('click', (e) => { e.stopPropagation(); document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected')); div.classList.add('selected'); div.style.zIndex = 100; });
+            div.querySelector('.resize-handle').addEventListener('mousedown', (e)=>startAction(e, 'resize')); div.querySelector('.resize-handle').addEventListener('touchstart', (e)=>startAction(e, 'resize'), {passive: false});
+            div.querySelector('.rotate-handle').addEventListener('mousedown', (e)=>startAction(e, 'rotate')); div.querySelector('.rotate-handle').addEventListener('touchstart', (e)=>startAction(e, 'rotate'), {passive: false});
+            div.querySelector('.delete-handle').addEventListener('click', (e) => { e.stopPropagation(); deleteItem(item.id); }); div.querySelector('.delete-handle').addEventListener('touchstart', (e) => { e.stopPropagation(); deleteItem(item.id); });
+            if(item.type === 'note') { div.querySelector('.edit-handle').addEventListener('click', (e) => { e.stopPropagation(); openNoteEditor(item); }); div.querySelector('.edit-handle').addEventListener('touchstart', (e) => { e.stopPropagation(); openNoteEditor(item); }); }
+            function startDrag(e) { if(e.target.classList.contains('control-handle')) return; e.preventDefault(); const t=e.touches?e.touches[0]:e; const startX=t.clientX,startY=t.clientY; const startLeft=div.offsetLeft,startTop=div.offsetTop; const move=(ev)=>{const tv=ev.touches?ev.touches[0]:ev; div.style.left=(startLeft+tv.clientX-startX)+'px'; div.style.top=(startTop+tv.clientY-startY)+'px';}; const end=()=>{removeEvents(move,end); item.x=parseInt(div.style.left); item.y=parseInt(div.style.top); if(useFirebase) db.collection("items").doc(String(item.id)).update({x:item.x, y:item.y}); else saveData('items');}; addEvents(move,end); }
+            function startAction(e, action) { e.preventDefault(); e.stopPropagation(); const t=e.touches?e.touches[0]:e; const startX=t.clientX,startY=t.clientY; const rect=div.getBoundingClientRect(); const centerX=rect.left+rect.width/2; const centerY=rect.top+rect.height/2; const startAngle=Math.atan2(startY-centerY,startX-centerX)*180/Math.PI; const initialRot=item.rot||0; const startW=div.offsetWidth,startH=div.offsetHeight; const move=(ev)=>{ ev.preventDefault(); const tv=ev.touches?ev.touches[0]:ev; if(action==='rotate'){const curAngle=Math.atan2(tv.clientY-centerY,tv.clientX-centerX)*180/Math.PI; const newRot=initialRot+(curAngle-startAngle); div.style.transform=`rotate(${newRot}deg)`; item.rot=newRot;} else{const newW=startW+(tv.clientX-startX); const newH=startH+(tv.clientY-startY); if(newW>50)div.style.width=newW+'px'; if(newH>50)div.style.height=newH+'px';}}; const end=()=>{removeEvents(move,end); if(action==='resize'){item.w=parseInt(div.style.width); item.h=parseInt(div.style.height);} if(useFirebase) db.collection("items").doc(String(item.id)).update(action==='rotate'?{rot:item.rot}:{w:item.w, h:item.h}); else saveData('items');}; addEvents(move,end); }
+            function addEvents(mv,ed){document.addEventListener('mousemove',mv);document.addEventListener('mouseup',ed);document.addEventListener('touchmove',mv,{passive:false});document.addEventListener('touchend',ed);}
+            function removeEvents(mv,ed){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',ed);document.removeEventListener('touchmove',mv);document.removeEventListener('touchend',ed);}
+        }
+
+        /* --- HELPERS --- */
+        function openBgModal(id){currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block';}
+        function openDrawModal(id){currentActiveWeek=id;document.getElementById('drawModalTitle').innerText="Art Studio 🎨";document.getElementById('drawModal').style.display='flex';document.getElementById('overlay').style.display='block';resizeCanvas();}
+        function closeAllModals(){if(document.getElementById('confirmModal').style.display==='flex')return; document.querySelectorAll('.modal').forEach(m=>m.style.display='none');document.getElementById('overlay').style.display='none';}
+        function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
+        function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
+        function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
+        function closeConfirm(res) { document.getElementById('confirmModal').style.display='none'; if(res) document.getElementById('overlay').style.display='none'; else if(!document.getElementById('noteEditorModal').style.display && !document.getElementById('bgModal').style.display) document.getElementById('overlay').style.display='none'; if(res && confirmCallback) confirmCallback(); confirmCallback=null; }
+        function askReset(){showConfirm("Reset EVERYTHING? This cannot be undone.",()=>{localStorage.clear();location.reload();});}
+        function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
+        function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
+        function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
+        function toggleNav(){const sb=document.getElementById("mySidebar");sb.style.width=sb.style.width==="250px"?"0":"250px";}
+        function setBoardBg(t,u=null){if(u)boardBgs[currentActiveWeek]={type:'custom',url:u};else boardBgs[currentActiveWeek]={type:t,url:null};applyBgToContainer(document.getElementById(currentActiveWeek+"-container"),boardBgs[currentActiveWeek]);saveData('bgs');closeAllModals();}
+        function handleBgUpload(i){if(i.files[0]){const r=new FileReader();r.onload=(e)=>setBoardBg('custom',e.target.result);r.readAsDataURL(i.files[0]);}}
+        function applyBgToContainer(c,d){if(!d)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
+        function applyAllBoardBgs(){['board-week-1','board-week-2'].forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);});}
+        function addGoal(id){const t=prompt("New Goal:");if(t){if(!goals[id])goals[id]=[];goals[id].push({text:t,done:false});saveData('goals');renderGoals();}}
+        function toggleGoal(id,idx){const d=!goals[id][idx].done;goals[id][idx].done=d;saveData('goals');renderGoals();if(d)confetti({particleCount:100,spread:70,origin:{y:0.6}});}
+        function deleteGoal(id,idx){showConfirm("Delete this goal?",()=>{goals[id].splice(idx,1);saveData('goals');renderGoals();});}
+        function renderGoals(){for(const[id,list]of Object.entries(goals)){const ul=document.getElementById(id);if(!ul)continue;ul.innerHTML='';list.forEach((g,i)=>{const li=document.createElement('li');li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#999':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`;ul.appendChild(li);});}}
+        function deleteItem(id){showConfirm("Delete this item?",()=>{if(useFirebase)db.collection("items").doc(String(id)).delete();else{items=items.filter(i=>i.id!==id);saveData('items');renderAllItems();}});}
+        function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
+
+        const canvas=document.getElementById('drawCanvas');const ctx=canvas.getContext('2d');let currentBrush='pen';let isDrawing=false;
+        function resizeCanvas(){const container=document.querySelector('.canvas-container');canvas.width=container.clientWidth;canvas.height=container.clientHeight;}
+        function setBrush(type,btn){currentBrush=type;document.querySelectorAll('.brush-btn').forEach(b=>b.classList.remove('active'));if(type!=='color')btn.classList.add('active');}
+        function getPoint(e){const rect=canvas.getBoundingClientRect();const touch=e.touches?e.touches[0]:e;return{x:touch.clientX-rect.left,y:touch.clientY-rect.top};}
+        canvas.addEventListener('mousedown',startDraw);canvas.addEventListener('mousemove',draw);canvas.addEventListener('mouseup',()=>isDrawing=false);canvas.addEventListener('touchstart',startDraw,{passive:false});canvas.addEventListener('touchmove',draw,{passive:false});canvas.addEventListener('touchend',()=>isDrawing=false);
+        function startDraw(e){isDrawing=true;ctx.beginPath();draw(e);}
+        function draw(e){if(!isDrawing)return;e.preventDefault();const p=getPoint(e);const size=document.getElementById('drawSize').value;const color=pickedColor.hex;ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';if(currentBrush==='eraser'){ctx.globalCompositeOperation='destination-out';ctx.strokeStyle="rgba(0,0,0,1)";ctx.lineTo(p.x,p.y);ctx.stroke();}else if(currentBrush==='spray'){ctx.globalCompositeOperation='source-over';ctx.fillStyle=color;for(let i=0;i<10;i++){const ang=Math.random()*Math.PI*2;const rad=Math.random()*size*2;ctx.fillRect(p.x+Math.cos(ang)*rad,p.y+Math.sin(ang)*rad,1,1);}}else if(currentBrush==='marker'){ctx.globalCompositeOperation='source-over';ctx.globalAlpha=0.5;ctx.strokeStyle=color;ctx.lineTo(p.x,p.y);ctx.stroke();ctx.globalAlpha=1.0;}else{ctx.globalCompositeOperation='source-over';ctx.strokeStyle=color;ctx.lineTo(p.x,p.y);ctx.stroke();}ctx.beginPath();ctx.moveTo(p.x,p.y);}
+        function clearCanvas(){ctx.clearRect(0,0,canvas.width,canvas.height);}
+        function initColorPicker(){const ring=document.getElementById('hueRing');const square=document.getElementById('svSquare');function setHue(e){e.preventDefault();const rect=ring.getBoundingClientRect();const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left-rect.width/2;const y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top-rect.height/2;let deg=Math.atan2(y,x)*(180/Math.PI)+90;if(deg<0)deg+=360;pickedColor.h=deg;updateColorUI();}ring.addEventListener('mousedown',(e)=>{setHue(e);document.addEventListener('mousemove',setHue);document.addEventListener('mouseup',()=>document.removeEventListener('mousemove',setHue));});ring.addEventListener('touchstart',(e)=>{setHue(e);document.addEventListener('touchmove',setHue,{passive:false});document.addEventListener('touchend',()=>document.removeEventListener('touchmove',setHue));},{passive:false});function setSV(e){e.preventDefault();const rect=square.getBoundingClientRect();let x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;let y=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;x=Math.max(0,Math.min(x,rect.width));y=Math.max(0,Math.min(y,rect.height));pickedColor.s=(x/rect.width)*100;pickedColor.v=100-(y/rect.height)*100;updateColorUI();}square.addEventListener('mousedown',(e)=>{setSV(e);document.addEventListener('mousemove',setSV);document.addEventListener('mouseup',()=>document.removeEventListener('mousemove',setSV));});square.addEventListener('touchstart',(e)=>{setSV(e);document.addEventListener('touchmove',setSV,{passive:false});document.addEventListener('touchend',()=>document.removeEventListener('touchmove',setSV));},{passive:false});['rSlider','gSlider','bSlider'].forEach(id=>{document.getElementById(id).addEventListener('input',updateColorFromSliders);});updateColorUI();}
+        function hsvToRgb(h,s,v){let r,g,b;const i=Math.floor(h*6);const f=h*6-i;const p=v*(1-s);const q=v*(1-f*s);const t=v*(1-(1-f)*s);switch(i%6){case 0:r=v,g=t,b=p;break;case 1:r=q,g=v,b=p;break;case 2:r=p,g=v,b=t;break;case 3:r=p,g=q,b=v;break;case 4:r=t,g=p,b=v;break;case 5:r=v,g=p,b=q;break;}return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};}
+        function updateColorUI(){document.getElementById('svSquare').style.backgroundColor=`hsl(${pickedColor.h},100%,50%)`;const rgb=hsvToRgb(pickedColor.h/360,pickedColor.s/100,pickedColor.v/100);pickedColor.r=rgb.r;pickedColor.g=rgb.g;pickedColor.b=rgb.b;pickedColor.hex=`rgb(${rgb.r},${rgb.g},${rgb.b})`;const svInd=document.getElementById('svInd');svInd.style.left=pickedColor.s+'%';svInd.style.top=(100-pickedColor.v)+'%';document.getElementById('rSlider').value=rgb.r;document.getElementById('gSlider').value=rgb.g;document.getElementById('bSlider').value=rgb.b;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
+        function updateColorFromSliders(){const r=parseInt(document.getElementById('rSlider').value);const g=parseInt(document.getElementById('gSlider').value);const b=parseInt(document.getElementById('bSlider').value);pickedColor.hex=`rgb(${r},${g},${b})`;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
+    </script>
+</body>
+</html>
