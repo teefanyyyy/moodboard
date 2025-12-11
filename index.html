@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <style>
+<style>
         @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap');
 
         :root { --bg-wall: #8d6e63; --c-accent: #FFD1DC; --c-dark: #5d4037; }
@@ -39,122 +39,143 @@
         .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; }
 
         /* --- LOCK BUTTON --- */
-        .lock-fab {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            background: white; border: 3px solid var(--c-dark);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.8rem; box-shadow: 2px 4px 10px rgba(0,0,0,0.3);
-            z-index: 1400; cursor: pointer; transition: transform 0.2s;
-        }
+        .lock-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: white; border: 3px solid var(--c-dark); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; box-shadow: 2px 4px 10px rgba(0,0,0,0.3); z-index: 1400; cursor: pointer; transition: transform 0.2s; }
         .lock-fab:active { transform: scale(0.9); }
         .lock-fab.locked { background: #ffcdd2; color: #c62828; border-color: #c62828; }
         .lock-fab.unlocked { background: #c8e6c9; color: #2e7d32; border-color: #2e7d32; }
 
-        /* --- LAYOUT FIXES FOR MOBILE --- */
+        /* --- LAYOUT --- */
         #weeks-container { padding-bottom: 100px; }
         .week-section { margin-bottom: 50px; }
         
+        /* Flexbox Header - Wraps nicely on mobile */
         .week-header { 
             padding: 0 15px; 
             margin-bottom: 5px; 
             display: flex; 
             justify-content: space-between; 
-            align-items: center; /* Better alignment */
-            flex-wrap: wrap; /* Allows buttons to drop to next line if screen is small */
-            gap: 10px; /* Space between title and buttons */
+            align-items: center; 
+            flex-wrap: wrap; /* Fixes buttons getting cut off */
+            gap: 10px;
         }
         
-        .week-title { 
-            color: white; 
-            font-size: 1.5rem; 
-            text-shadow: 1px 1px #333; 
-            white-space: nowrap; /* Keeps date on one line */
-        }
-        
+        .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; white-space: nowrap; }
         .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
-        body.is-locked .board-actions, 
-        body.is-locked .goal-add-btn,
-        body.is-locked .control-handle { display: none !important; }
+        
+        /* Locked State */
+        body.is-locked .board-actions, body.is-locked .goal-add-btn, body.is-locked .control-handle { display: none !important; }
         body.is-locked .draggable-item { pointer-events: none; }
         
         .action-btn { background: white; border: 2px solid var(--c-dark); border-radius: 15px; padding: 5px 10px; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.2); transition: 0.1s; font-size: 0.9rem; }
         .action-btn:active { transform: translateY(2px); box-shadow: none; }
         .btn-note { background: #fff9c4; } .btn-draw { background: #b3e5fc; } .btn-bg { background: #e0e0e0; }
 
-        /* --- BOARD & GOALS FIX --- */
+        /* --- GOALS STRIP (The Fix) --- */
         .goals-strip { 
             width: 95%; 
             margin: 0 auto; 
             background: #fff; 
-            min-height: 80px; 
+            
+            /* Clean Lines Pattern */
+            background-image: linear-gradient(#cfd8dc 1px, transparent 1px); 
+            background-size: 100% 30px; /* Line height */
+            background-position: 0 10px; /* Align lines */
+            
+            min-height: 70px; /* Height of roughly 2 lines */
             border-radius: 5px 5px 0 0; 
             position: relative; 
-            background-image: linear-gradient(#cfd8dc 1px, transparent 1px); 
-            background-size: 100% 25px; 
-            padding: 15px; /* More padding */
+            padding: 10px 20px; 
             box-shadow: 0 -2px 5px rgba(0,0,0,0.2); 
-            z-index: 5; 
+            z-index: 5;
         }
-        .goals-strip::before { content: ''; position: absolute; top: -15px; left: 0; width: 100%; height: 20px; background: radial-gradient(circle, #333 30%, transparent 40%); background-size: 30px 30px; }
+
+        /* Spiral Holes */
+        .goals-strip::before { 
+            content: ''; 
+            position: absolute; 
+            top: -15px; 
+            left: 0; 
+            width: 100%; 
+            height: 25px; 
+            background: radial-gradient(circle, #333 30%, transparent 35%); 
+            background-size: 35px 35px; /* Adjust spacing of holes */
+            background-position: 10px top;
+            z-index: -1; 
+        }
         
-        /* Flexbox for the Goal Header to keep button aligned */
+        /* Header Container */
         .goal-header { 
-            font-weight: bold; 
-            color: #ff7043; 
-            text-decoration: underline; 
-            margin-bottom: 10px; 
             display: flex; 
             justify-content: space-between; 
-            align-items: center; 
+            align-items: center;
+            height: 30px; /* Sits on one line */
+            margin-bottom: 5px;
         }
         
-        .goal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-        .goal-list li { display: flex; align-items: center; gap: 5px; font-size: 1.1rem; background: rgba(255,255,255,0.8); padding: 2px 6px; border-radius: 5px; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .goal-header span {
+            font-weight: bold; 
+            color: #ff7043; 
+            text-decoration: underline;
+            font-size: 1.1rem;
+        }
         
         .goal-add-btn { 
             background: var(--c-accent); 
             border: 1px solid #aaa; 
             border-radius: 10px; 
-            padding: 5px 12px; 
+            padding: 2px 10px; 
             font-family: inherit; 
-            font-size: 1rem; 
-            flex-shrink: 0; /* Prevents button from being squished */
-            margin-left: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
 
-        .board-container { width: 100%; height: 55vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
+        /* Horizontal List Layout */
+        .goal-list { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            display: flex; 
+            flex-wrap: wrap; /* Allows items to flow to next line */
+            gap: 15px; 
+        }
         
-        /* Board Backgrounds */
+        .goal-list li { 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+            font-size: 1.1rem; 
+            background: rgba(255,255,255,0.8); 
+            padding: 0 5px; 
+            border-radius: 5px;
+            height: 30px; /* Align with background lines */
+        }
+        
+        .goal-list li input { accent-color: #ff7043; }
+
+        /* BOARD */
+        .board-container { width: 100%; height: 55vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
         .board-bg-cork { background-color: #bcaaa4 !important; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png') !important; background-size: auto !important; }
         .board-bg-grid { background-color: #fdfdfd !important; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px) !important; background-size: 30px 30px !important; }
         .board-bg-pink { background-color: #f8bbd0 !important; background-image: radial-gradient(#f48fb1 2px, transparent 2px) !important; background-size: 20px 20px !important; }
         .board-bg-clouds { background-color: #e3f2fd !important; background-image: radial-gradient(white 20%, transparent 20%), radial-gradient(white 20%, transparent 20%) !important; background-position: 0 0, 50px 50px !important; background-size: 100px 100px !important; }
         .board-inner { width: 2000px; height: 100%; position: relative; }
 
-        /* --- ITEMS --- */
+        /* ITEMS */
         .draggable-item { position: absolute; touch-action: none; overflow: visible !important; transform-origin: center center; will-change: transform, left, top, width, height; }
         .draggable-item.selected { z-index: 1000 !important; filter: drop-shadow(0 0 5px var(--c-accent)); }
-        
         .scalable-content { transform-origin: 0 0; position: absolute; top: 0; left: 0; }
-
         .note-paper { background-color: #fff; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); padding: 35px 15px 15px 55px; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; color: #444; font-size: 1.3rem; pointer-events: none; }
         .note-paper::after { content: ''; position: absolute; top: 0; left: 10px; width: 35px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 25px; background-repeat: repeat-y; opacity: 0.9; }
         .tape { width: 100px; height: 28px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-1deg); }
         .note-text-area { flex-grow: 1; word-wrap: break-word; line-height: 1.2; }
         .note-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; }
-        
         .mood-tag { display: flex; align-items: center; gap: 5px; opacity: 0.9; }
         .mood-tag img { width: 25px; height: 25px; object-fit: contain; }
         .mood-tag span { font-size: 1.2rem; color: #ff8a80; font-weight: bold; }
-        
         .note-polaroid { width: 90px; height: 90px; background: white; border: 4px solid white; box-shadow: 1px 1px 4px rgba(0,0,0,0.2); transform: rotate(3deg); }
         .note-polaroid img { width: 100%; height: 100%; object-fit: cover; }
         .sticker-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
         .sticker-border .sticker-img { filter: drop-shadow(2px 2px 0 white) drop-shadow(-2px -2px 0 white) drop-shadow(2px -2px 0 white) drop-shadow(-2px 2px 0 white); }
-
-        /* HANDLES */
         .control-handle { width: 40px; height: 40px; border: 2px solid white; border-radius: 50%; position: absolute; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 200; display: none; justify-content: center; align-items: center; cursor: pointer; touch-action: none; }
         .draggable-item.selected .control-handle { display: flex; }
         .resize-handle { background-color: var(--c-accent); right: -15px; bottom: -15px; font-size:1.5rem; }
@@ -163,26 +184,22 @@
         .rotate-handle { background-color: #64b5f6; left: 50%; top: -50px; transform: translateX(-50%); }
         .rotate-handle::after { content:''; position:absolute; top:38px; height:15px; width:2px; background:white; pointer-events:none;}
 
-        /* --- MODALS --- */
+        /* MODALS */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; flex-direction: column; align-items: center; max-height: 90vh; overflow-y: auto; }
         .confirm-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 20px; width: 300px; text-align: center; }
         .confirm-msg { font-size: 1.5rem; margin-bottom: 20px; color: #444; }
         .confirm-actions { display: flex; gap: 10px; }
-
-        /* NOTE EDITOR */
         .note-editor { background-color: #fff; width: 320px; height: 480px; padding: 40px 20px 20px 60px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         .note-editor::after { content: ''; position: absolute; top: 0; left: 20px; width: 25px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 20px; background-repeat: repeat-y; opacity: 0.9; pointer-events: none; }
         .editor-tape { width: 120px; height: 35px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(2deg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         #editorText { flex-grow: 1; border: none; outline: none; resize: none; font-family: 'Gaegu', cursive; font-size: 1.5rem; color: #444; background: transparent; line-height: 1.5; }
         .editor-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; min-height: 80px; }
-        
         .mood-grid { display: flex; gap: 10px; flex-wrap: wrap; width: 160px; }
         .mood-option-container { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
         .mood-btn { width: 35px; height: 35px; border: 2px solid transparent; border-radius: 50%; object-fit: contain; transition: transform 0.1s; padding: 2px; background: #fff; }
         .mood-btn.selected { border-color: var(--c-dark); background: #b3e5fc; transform: scale(1.1); }
         .mood-label-small { font-size: 0.8rem; color: #777; margin-top: -2px;}
-
         .editor-photo-box { width: 80px; height: 80px; border: 2px dashed #ccc; background: #f9f9f9; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; transform: rotate(-2deg); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
         #editorImgPreview { width: 100%; height: 100%; object-fit: cover; border: 4px solid white; display: none; }
         .editor-buttons { display: flex; gap: 10px; margin-top: 20px; width: 300px; }
@@ -191,8 +208,6 @@
         .sticker-mode-area { margin-top: 15px; width: 100%; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center; }
         .sticker-link { color: white; cursor: pointer; text-decoration: underline; font-weight: bold; font-size: 1.1rem; }
         .sticker-option { margin-top: 5px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
-
-        /* STATS & BG MODAL */
         .stats-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 25px; width: 320px; font-size: 1.2rem; }
         .stat-row { display: flex; align-items: center; margin-bottom: 10px; }
         .stat-label { width: 100px; }
@@ -202,8 +217,6 @@
         .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
         .bg-upload-btn { grid-column: span 2; background: #e0e0e0; border: 2px dashed #888; color: #555; }
-
-        /* DRAW MODAL */
         .modal-draw-content { background: white; padding: 15px; border-radius: 20px; border: 3px solid var(--c-dark); width: 95%; max-width: 400px; }
         .ibis-picker-container { display: flex; flex-direction: column; align-items: center; gap: 10px; background: #444; padding: 15px; border-radius: 15px; color: white; margin-bottom: 10px; }
         .picker-area { position: relative; width: 220px; height: 220px; }
@@ -339,8 +352,14 @@
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     <div id="bgModal" class="modal"><div class="modal-draw-content" style="text-align:center;"><h3>Choose Background 🖼️</h3><div class="bg-grid-container"><div class="bg-btn bg-cork" onclick="setBoardBg('cork')">Cork</div><div class="bg-btn bg-grid" onclick="setBoardBg('grid')">Grid</div><div class="bg-btn bg-pink" onclick="setBoardBg('pink')">Pink</div><div class="bg-btn bg-clouds" onclick="setBoardBg('clouds')">Clouds</div><input type="file" id="bgFileInput" accept="image/*" style="display:none;" onchange="handleBgUpload(this)"><div class="bg-btn bg-upload-btn" onclick="document.getElementById('bgFileInput').click()">⬆️ Upload Photo</div></div><br><button class="cancel-btn" onclick="closeAllModals()">Close</button></div></div>
 
-    <script>
+<script>
+        /* 
+           =========================================================
+           1. CONFIGURATION
+           =========================================================
+        */
         const TITLE_IMAGE_SRC = "https://fontmeme.com/permalink/231211/a8596068ce879003632970959067963d.png";
+        
         const CUSTOM_MOODS = [
             { name: "hapi", src: "./hapi.png" },
             { name: "hapi with ethan", src: "./hapi with ethan.png" },
@@ -360,6 +379,7 @@
           appId: "1:173097557380:web:7a188a47ed996e7fa091d1"
         };
 
+        /* --- VARIABLES --- */
         let db=null; let useFirebase=false; let items=[]; let goals={}; let boardBgs={}; 
         let pickedColor={h:0,s:100,v:0,r:0,g:0,b:0,hex:"#000000"}; 
         let editingItemId=null; let currentActiveWeek=''; let currentEditorImage=null; let confirmCallback=null;
@@ -367,16 +387,27 @@
         let activeWeeks = []; 
         let isLocked = true;
 
+        /* --- INITIALIZATION --- */
         window.onload = function() {
             document.getElementById('mainTitleImage').src = TITLE_IMAGE_SRC;
             initMoodSelector();
             initWeeks(); 
             updateLockUI();
             
-            if(firebaseConfig.apiKey){firebase.initializeApp(firebaseConfig);db=firebase.firestore();useFirebase=true;loadFromFirebase();}else{loadFromLocal();}
-            initColorPicker(); document.getElementById('drawSize').addEventListener('input',(e)=>document.getElementById('sizeVal').innerText=e.target.value);
+            if(firebaseConfig.apiKey){
+                firebase.initializeApp(firebaseConfig);
+                db=firebase.firestore();
+                useFirebase=true;
+                loadFromFirebase();
+            } else {
+                loadFromLocal();
+            }
+            
+            initColorPicker(); 
+            document.getElementById('drawSize').addEventListener('input',(e)=>document.getElementById('sizeVal').innerText=e.target.value);
         };
 
+        /* --- LOCK & SETTINGS --- */
         function toggleLockMode() { isLocked = !isLocked; updateLockUI(); }
 
         function updateLockUI() {
@@ -399,7 +430,7 @@
         function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; toggleNav(); }
         function askHardReset() { const code = prompt("To delete EVERYTHING, type the word 'DELETE' below:"); if (code === "DELETE") { localStorage.clear(); location.reload(); } else if (code !== null) { alert("Incorrect code. Nothing was deleted."); } }
 
-        /* --- DATE LOGIC --- */
+        /* --- DATE & WEEKS LOGIC --- */
         function initWeeks() {
             const today = new Date();
             const currentWeekId = getWeekId(today);
@@ -411,9 +442,13 @@
             const container = document.getElementById('weeks-container');
             const sidebarList = document.getElementById('sidebar-weeks-list');
             container.innerHTML = ''; sidebarList.innerHTML = '';
+            
             activeWeeks.forEach(id => {
                 const datesLabel = getWeekLabel(id);
+                // Sidebar Link
                 const link = document.createElement('a'); link.href = "#" + id; link.innerText = datesLabel; link.onclick = toggleNav; sidebarList.appendChild(link);
+                
+                // Main Section HTML
                 const section = document.createElement('div'); section.className = 'week-section'; section.id = id;
                 section.innerHTML = `
                     <div class="week-header">
@@ -424,10 +459,16 @@
                             <button class="action-btn btn-bg" onclick="openBgModal('${id}')">🖼️ BG</button>
                         </div>
                     </div>
+                    
+                    <!-- NOTEBOOK GOALS AREA -->
                     <div class="goals-strip">
-                        <div class="goal-header">Weekly Goals <button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button></div>
+                        <div class="goal-header">
+                            <span>Weekly Goals</span>
+                            <button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button>
+                        </div>
                         <ul class="goal-list" id="goals-${id}"></ul>
                     </div>
+
                     <div class="board-container" id="${id}-container">
                         <div class="board-inner" id="board-${id}" onclick="deselectAll(event)"></div>
                     </div>
@@ -438,13 +479,74 @@
         function getWeekId(dateObj) { const d = new Date(dateObj); const day = d.getDay(); const diff = d.getDate() - day; const sunday = new Date(d.setDate(diff)); return "week-" + sunday.toISOString().split('T')[0]; }
         function getWeekLabel(weekId) { const dateStr = weekId.replace('week-', ''); const start = new Date(dateStr); const end = new Date(start); end.setDate(start.getDate() + 6); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return `${monthNames[start.getMonth()]} ${start.getDate()} - ${end.getDate()}`; }
 
-        /* --- DATA --- */
+        /* --- FIREBASE & DATA LOAD/SAVE --- */
+        function loadFromLocal(){ if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); renderApp(); }
+        
+        function loadFromFirebase(){ 
+            db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();if(document.getElementById('statsModal').style.display==='flex')calculateStats();}); 
+            db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); 
+            db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); 
+        }
+        
+        function saveData(t){ 
+            if(!useFirebase){ 
+                if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); 
+                if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); 
+                if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); 
+                return; 
+            } 
+            if(t==='goals')db.collection("data").doc("goals").set(goals); 
+            if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); 
+        }
+        
+        function renderApp(){ renderAllItems(); renderGoals(); applyAllBoardBgs(); }
+
+        /* --- 📝 GOALS LOGIC (THIS WAS MISSING!) --- */
+        function addGoal(id){
+            if(isLocked) return; 
+            const t = prompt("New Goal:");
+            if(t){
+                if(!goals[id]) goals[id]=[];
+                goals[id].push({text:t, done:false});
+                saveData('goals');
+                renderGoals();
+            }
+        }
+
+        function toggleGoal(id, idx){
+            if(isLocked) return; 
+            const d = !goals[id][idx].done;
+            goals[id][idx].done = d;
+            saveData('goals');
+            renderGoals();
+            if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}});
+        }
+
+        function deleteGoal(id, idx){
+            if(isLocked) return; 
+            showConfirm("Delete this goal?",()=>{
+                goals[id].splice(idx,1);
+                saveData('goals');
+                renderGoals();
+            });
+        }
+
+        function renderGoals(){
+            for(const[id,list]of Object.entries(goals)){
+                const ul=document.getElementById('goals-'+id);
+                if(!ul) continue;
+                ul.innerHTML='';
+                list.forEach((g,i)=>{
+                    const li=document.createElement('li');
+                    li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`;
+                    ul.appendChild(li);
+                });
+            }
+        }
+
+        /* --- NOTE EDITOR --- */
         function initMoodSelector(){ const container = document.getElementById('moodGrid'); container.innerHTML = ''; CUSTOM_MOODS.forEach(opt => { const wrapper = document.createElement('div'); wrapper.className = 'mood-option-container'; wrapper.onclick = () => selectMood(opt.src, wrapper.querySelector('img')); const img = document.createElement('img'); img.src = opt.src; img.title = opt.name; img.className = 'mood-btn'; const span = document.createElement('span'); span.className = 'mood-label-small'; span.innerText = opt.name; wrapper.appendChild(img); wrapper.appendChild(span); container.appendChild(wrapper); }); }
         function selectMood(src, imgElement) { selectedMoodSrc = src; document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected')); imgElement.classList.add('selected'); }
-        function loadFromLocal(){ if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); renderApp(); }
-        function loadFromFirebase(){ db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();if(document.getElementById('statsModal').style.display==='flex')calculateStats();}); db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); }
-        function saveData(t){ if(!useFirebase){ if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); return; } if(t==='goals')db.collection("data").doc("goals").set(goals); if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); }
-        function renderApp(){renderAllItems();renderGoals();applyAllBoardBgs();}
 
         function openNoteEditor(weekIdOrItem) {
             if(isLocked) return;
@@ -477,20 +579,16 @@
             closeAllModals(); clearCanvas();
         }
 
-        /* --- DOM CREATION (With Scaling) --- */
+        /* --- ITEMS & RENDERING --- */
         function createDOMItem(item) {
             const board = document.getElementById('board-' + item.weekId); if(!board) return;
             const div = document.createElement('div'); div.classList.add('draggable-item');
-            
-            // Apply coordinates and size
             div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; 
             div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
             div.style.transform = `rotate(${item.rot}deg)`; div.style.zIndex = 1;
 
-            // Calculate Scale for Inner Content
             const baseW = item.type === 'note' ? 220 : 200;
             const baseH = item.type === 'note' ? 260 : 200;
-            // Prevent division by zero if bad data
             const scaleX = item.w / baseW || 1;
             const scaleY = item.h / baseH || 1;
 
@@ -505,7 +603,6 @@
                 if(item.imgUrl) innerContent = `<div class="${borderClass}"><img src="${item.imgUrl}" class="sticker-img" style="width:100%; height:100%; object-fit:contain;"></div>`;
             }
 
-            // Wrap inner content in scaling div
             const scaledWrapper = `<div class="scalable-content" style="width:${baseW}px; height:${baseH}px; transform: scale(${scaleX}, ${scaleY});">${innerContent}</div>`;
             
             div.innerHTML = handles + scaledWrapper;
@@ -515,8 +612,6 @@
 
         function setupItemEvents(div, item, baseW, baseH) {
             const scalable = div.querySelector('.scalable-content');
-
-            // SINGLE FINGER ACTIONS (Handles)
             const resizer = div.querySelector('.resize-handle');
             const rotater = div.querySelector('.rotate-handle');
             
@@ -525,13 +620,9 @@
                 e.preventDefault(); e.stopPropagation();
                 const startX = (e.touches ? e.touches[0].clientX : e.clientX);
                 const startY = (e.touches ? e.touches[0].clientY : e.clientY);
-                const rect = div.getBoundingClientRect();
-                const centerX = rect.left + rect.width/2;
-                const centerY = rect.top + rect.height/2;
-                const startW = div.offsetWidth;
-                const startH = div.offsetHeight;
-                const startAngle = Math.atan2(startY - centerY, startX - centerX) * 180 / Math.PI;
-                const initialRot = item.rot || 0;
+                const startW = div.offsetWidth; const startH = div.offsetHeight;
+                const rect = div.getBoundingClientRect(); const centerX = rect.left + rect.width/2; const centerY = rect.top + rect.height/2;
+                const startAngle = Math.atan2(startY - centerY, startX - centerX) * 180 / Math.PI; const initialRot = item.rot || 0;
 
                 const move = (ev) => {
                     ev.preventDefault();
@@ -541,15 +632,9 @@
                     if(action === 'resize') {
                         const newW = Math.max(50, startW + (cx - startX));
                         const newH = Math.max(50, startH + (cy - startY));
-                        
-                        div.style.width = newW + 'px';
-                        div.style.height = newH + 'px';
-                        
-                        // Update Scale
-                        const sX = newW / baseW;
-                        const sY = newH / baseH;
+                        div.style.width = newW + 'px'; div.style.height = newH + 'px';
+                        const sX = newW / baseW; const sY = newH / baseH;
                         if(scalable) scalable.style.transform = `scale(${sX}, ${sY})`;
-
                     } else if (action === 'rotate') {
                         const curAngle = Math.atan2(cy - centerY, cx - centerX) * 180 / Math.PI;
                         const newRot = initialRot + (curAngle - startAngle);
@@ -557,14 +642,12 @@
                         item.rot = newRot;
                     }
                 };
-
                 const end = () => {
                     document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', end);
                     document.removeEventListener('touchmove', move); document.removeEventListener('touchend', end);
                     item.w = parseInt(div.style.width); item.h = parseInt(div.style.height);
                     if(useFirebase) db.collection("items").doc(String(item.id)).set(item); else saveData('items');
                 };
-                
                 if(e.touches) { document.addEventListener('touchmove', move, {passive:false}); document.addEventListener('touchend', end); }
                 else { document.addEventListener('mousemove', move); document.addEventListener('mouseup', end); }
             }
@@ -574,7 +657,6 @@
             rotater.addEventListener('mousedown', (e) => handleStart(e, 'rotate'));
             rotater.addEventListener('touchstart', (e) => handleStart(e, 'rotate'), {passive:false});
 
-            // BUTTONS
             div.querySelector('.delete-handle').addEventListener('click', (e) => { e.stopPropagation(); deleteItem(item.id); });
             div.querySelector('.delete-handle').addEventListener('touchstart', (e) => { e.stopPropagation(); deleteItem(item.id); });
             if(item.type === 'note') {
@@ -582,80 +664,46 @@
                 div.querySelector('.edit-handle').addEventListener('touchstart', (e) => { e.stopPropagation(); openNoteEditor(item); });
             }
 
-            // TOUCH PINCH (ZOOM) & DRAG
-            let initialDist=0; let initialAngle=0; let initialRot=0; 
-            let startX=0; let startY=0; let initialLeft=0; let initialTop=0; 
-            let initialW=0; let initialH=0;
-            
+            // TOUCH PINCH/MOVE
+            let initialDist=0; let initialAngle=0; let initialRot=0; let startX=0; let startY=0; let initialLeft=0; let initialTop=0; let initialW=0; let initialH=0;
             function handleItemTouchStart(e) {
                 if(isLocked) return;
                 if(e.target.classList.contains('control-handle')) return; 
-                
                 document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
                 div.classList.add('selected'); div.style.zIndex = 100;
-
                 const touches = e.touches;
-                if(touches.length === 1) {
-                    e.preventDefault();
-                    startX = touches[0].clientX; startY = touches[0].clientY;
-                    initialLeft = parseFloat(div.style.left || 0); initialTop = parseFloat(div.style.top || 0);
-                } else if (touches.length === 2) {
-                    e.preventDefault();
-                    const t1 = touches[0]; const t2 = touches[1];
-                    initialDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                    initialAngle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
-                    initialW = parseFloat(div.style.width); initialH = parseFloat(div.style.height); initialRot = item.rot || 0;
-                }
+                if(touches.length === 1) { e.preventDefault(); startX = touches[0].clientX; startY = touches[0].clientY; initialLeft = parseFloat(div.style.left || 0); initialTop = parseFloat(div.style.top || 0); } 
+                else if (touches.length === 2) { e.preventDefault(); const t1 = touches[0]; const t2 = touches[1]; initialDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY); initialAngle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI; initialW = parseFloat(div.style.width); initialH = parseFloat(div.style.height); initialRot = item.rot || 0; }
             }
-
             function handleItemTouchMove(e) {
                 if(isLocked) return;
                 if(e.target.classList.contains('control-handle')) return;
                 e.preventDefault();
                 const touches = e.touches;
-                
-                if(touches.length === 1) {
-                    const dx = touches[0].clientX - startX;
-                    const dy = touches[0].clientY - startY;
-                    div.style.left = (initialLeft + dx) + 'px';
-                    div.style.top = (initialTop + dy) + 'px';
-                } else if(touches.length === 2) {
+                if(touches.length === 1) { const dx = touches[0].clientX - startX; const dy = touches[0].clientY - startY; div.style.left = (initialLeft + dx) + 'px'; div.style.top = (initialTop + dy) + 'px'; } 
+                else if(touches.length === 2) {
                     const t1 = touches[0]; const t2 = touches[1];
                     const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
                     const scaleFactor = currentDist / initialDist;
-                    
-                    const newW = Math.max(50, initialW * scaleFactor); 
-                    const newH = Math.max(50, initialH * scaleFactor);
-                    
-                    div.style.width = newW + 'px';
-                    div.style.height = newH + 'px';
-
-                    // Update Scale Transform
-                    const sX = newW / baseW;
-                    const sY = newH / baseH;
+                    const newW = Math.max(50, initialW * scaleFactor); const newH = Math.max(50, initialH * scaleFactor);
+                    div.style.width = newW + 'px'; div.style.height = newH + 'px';
+                    const sX = newW / baseW; const sY = newH / baseH;
                     if(scalable) scalable.style.transform = `scale(${sX}, ${sY})`;
-
                     const currentAngle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
                     const newRot = initialRot + (currentAngle - initialAngle);
                     div.style.transform = `rotate(${newRot}deg)`;
-                    
                     item.w = newW; item.h = newH; item.rot = newRot;
                 }
             }
-
             function handleItemTouchEnd(e) {
                 if(isLocked) return;
-                if(e.touches.length === 0) {
-                    item.x = parseInt(div.style.left); item.y = parseInt(div.style.top);
-                    if(useFirebase) db.collection("items").doc(String(item.id)).set(item); else saveData('items');
-                }
+                if(e.touches.length === 0) { item.x = parseInt(div.style.left); item.y = parseInt(div.style.top); if(useFirebase) db.collection("items").doc(String(item.id)).set(item); else saveData('items'); }
             }
-
             div.addEventListener('touchstart', handleItemTouchStart, {passive:false});
             div.addEventListener('touchmove', handleItemTouchMove, {passive:false});
             div.addEventListener('touchend', handleItemTouchEnd);
             
-            // Mouse Drag Fallback
+            // Mouse Fallback
             div.addEventListener('mousedown', (e) => {
                 if(isLocked || e.target.classList.contains('control-handle')) return;
                 document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
@@ -666,6 +714,9 @@
                 document.addEventListener('mousemove', mv); document.addEventListener('mouseup', ed);
             });
         }
+
+        function deleteItem(id){if(isLocked)return; showConfirm("Delete this item?",()=>{if(useFirebase)db.collection("items").doc(String(id)).delete();else{items=items.filter(i=>i.id!==id);saveData('items');renderAllItems();}});}
+        function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
 
         /* --- HELPERS --- */
         function openBgModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block';}
@@ -683,12 +734,8 @@
         function handleBgUpload(i){if(i.files[0]){const r=new FileReader();r.onload=(e)=>setBoardBg('custom',e.target.result);r.readAsDataURL(i.files[0]);}}
         function applyBgToContainer(c,d){if(!d)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
         function applyAllBoardBgs(){activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);});}
-        function addGoal(id){if(isLocked)return; const t=prompt("New Goal:");if(t){if(!goals[id])goals[id]=[];goals[id].push({text:t,done:false});saveData('goals');renderGoals();}}
-        function toggleGoal(id,idx){if(isLocked)return; const d=!goals[id][idx].done;goals[id][idx].done=d;saveData('goals');renderGoals();if(d)confetti({particleCount:100,spread:70,origin:{y:0.6}});}
-        function deleteGoal(id,idx){if(isLocked)return; showConfirm("Delete this goal?",()=>{goals[id].splice(idx,1);saveData('goals');renderGoals();});}
-        function deleteItem(id){if(isLocked)return; showConfirm("Delete this item?",()=>{if(useFirebase)db.collection("items").doc(String(id)).delete();else{items=items.filter(i=>i.id!==id);saveData('items');renderAllItems();}});}
-        function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
 
+        /* --- DRAW CANVAS --- */
         const canvas=document.getElementById('drawCanvas');const ctx=canvas.getContext('2d');let currentBrush='pen';let isDrawing=false;
         function resizeCanvas(){const container=document.querySelector('.canvas-container');canvas.width=container.clientWidth;canvas.height=container.clientHeight;}
         function setBrush(type,btn){currentBrush=type;document.querySelectorAll('.brush-btn').forEach(b=>b.classList.remove('active'));if(type!=='color')btn.classList.add('active');}
