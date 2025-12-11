@@ -156,7 +156,7 @@
         </div>
     </div>
 
-    <div id="settingsModal" class="modal"><div class="confirm-box" style="width:340px;"><h3>⚙️ Settings</h3><p style="color:#777; font-size:1rem;">Danger Zone</p><button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button><br><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
+    <div id="settingsModal" class="modal"><div class="confirm-box" style="width:340px;"><h3>⚙️ Settings</h3><div style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;"><h4>App Wallpaper 🏠</h4><button class="action-btn" onclick="document.getElementById('wallUpload').click()">Upload Image</button><input type="file" id="wallUpload" accept="image/*" style="display:none" onchange="uploadWallpaper(this)"><button class="action-btn" style="background:#ffccbc;" onclick="resetWallpaper()">Reset</button></div><p style="color:#777; font-size:1rem;">Danger Zone</p><button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button><br><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     <div id="confirmModal" class="modal"><div class="confirm-box"><div class="confirm-msg" id="confirmMsg">Are you sure?</div><div class="confirm-actions"><button class="cancel-btn" onclick="closeConfirm(false)">No</button><button class="save-btn" style="background:#ef5350; color:white;" onclick="closeConfirm(true)">Yes</button></div></div></div>
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     
@@ -175,6 +175,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
