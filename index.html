@@ -42,6 +42,8 @@
         .week-section { margin-bottom: 50px; }
         .week-header { padding: 0 15px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; white-space: nowrap; }
+        
+        /* ACTIONS */
         .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
         body.is-locked .board-actions, body.is-locked .goal-add-btn, body.is-locked .control-handle { display: none !important; }
         body.is-locked .draggable-item { pointer-events: none; }
@@ -70,6 +72,7 @@
         .board-bg-clouds { background-color: #e3f2fd !important; background-image: radial-gradient(white 20%, transparent 20%), radial-gradient(white 20%, transparent 20%) !important; background-position: 0 0, 50px 50px !important; background-size: 100px 100px !important; }
         .board-inner { width: 2000px; height: 100%; position: relative; }
         
+        /* ITEMS */
         .draggable-item { position: absolute; touch-action: none; overflow: visible !important; transform-origin: center center; will-change: transform, left, top, width, height; }
         .draggable-item.selected { z-index: 1000 !important; filter: drop-shadow(0 0 5px var(--c-accent)); }
         .scalable-content { transform-origin: 0 0; position: absolute; top: 0; left: 0; }
@@ -78,9 +81,12 @@
         .tape { width: 100px; height: 28px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-1deg); background-size: cover; background-position: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .note-text-area { flex-grow: 1; word-wrap: break-word; line-height: 1.2; }
         .note-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; }
+        
+        /* FIX: Ensure Mood Icons in Note are small */
         .mood-tag { display: flex; align-items: center; gap: 5px; opacity: 0.9; }
         .mood-tag img { width: 25px; height: 25px; object-fit: contain; }
         .mood-tag span { font-size: 1.2rem; color: #ff8a80; font-weight: bold; }
+        
         .note-polaroid { width: 90px; height: 90px; background: white; border: 4px solid white; box-shadow: 1px 1px 4px rgba(0,0,0,0.2); transform: rotate(3deg); }
         .note-polaroid img { width: 100%; height: 100%; object-fit: cover; }
         .sticker-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
@@ -93,69 +99,54 @@
         .rotate-handle { background-color: #64b5f6; left: 50%; top: -50px; transform: translateX(-50%); }
         .rotate-handle::after { content:''; position:absolute; top:38px; height:15px; width:2px; background:white; pointer-events:none;}
 
-        /* --- FANCY EDITOR MODAL (FIXED) --- */
+        /* --- FANCY EDITOR MODAL --- */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
-        .modal { 
-            display: none; 
-            position: fixed; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            z-index: 2000; 
-            flex-direction: column; align-items: center; 
-            max-height: 90vh; overflow-y: auto; 
-            width: 95%; max-width: 450px; /* Constrain width */
-        }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; flex-direction: column; align-items: center; max-height: 90vh; overflow-y: auto; width: 95%; max-width: 450px; }
+        .editor-container-row { display: flex; gap: 10px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; }
         
-        .editor-container-row { 
-            display: flex; 
-            gap: 10px; 
-            align-items: flex-start; 
-            justify-content: center;
-            flex-wrap: wrap; /* IMPORTANT: Wrap on mobile */
-            width: 100%;
-        }
-        
-        /* The Note Preview */
-        .note-editor { 
-            background-color: #fff; 
-            width: 280px; 
-            height: 350px; 
-            padding: 40px 20px 20px 50px; 
-            position: relative; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
-            display: flex; flex-direction: column; 
-            transition: 0.2s; background-size: cover; background-position: center; 
-            flex-shrink: 0;
-        }
+        .note-editor { background-color: #fff; width: 280px; height: 350px; padding: 40px 20px 20px 50px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; transition: 0.2s; background-size: cover; background-position: center; flex-shrink: 0; }
         .note-editor::after { content: ''; position: absolute; top: 0; left: 15px; width: 25px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 20px; background-repeat: repeat-y; opacity: 0.9; pointer-events: none; }
         .editor-tape { width: 120px; height: 35px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(2deg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); background-size: cover; background-position: center; }
         #editorText { flex-grow: 1; border: none; outline: none; resize: none; font-family: 'Gaegu', cursive; font-size: 1.5rem; color: #444; background: transparent; line-height: 1.5; }
         
-        /* The Sidebar Customizer (Responsive) */
-        .editor-sidebar { 
-            width: 100px; 
-            background: #fff0f5; 
-            border-radius: 15px; 
-            padding: 10px; 
-            border: 2px solid var(--c-accent); 
-            display: flex; flex-direction: column; align-items: center; 
-            max-height: 400px; overflow-y: auto; 
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1); 
-        }
+        .editor-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; min-height: 80px; }
         
-        /* Mobile override for sidebar */
+        /* --- FIXED MOOD GRID IN EDITOR --- */
+        .mood-grid { 
+            display: flex; 
+            gap: 5px; 
+            flex-wrap: wrap; 
+            width: 100%; 
+            max-width: 150px; /* Constrain width */
+        }
+        .mood-option-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            cursor: pointer; 
+        }
+        .mood-btn { 
+            width: 30px !important; 
+            height: 30px !important; 
+            border: 2px solid transparent; 
+            border-radius: 50%; 
+            object-fit: contain; 
+            transition: transform 0.1s; 
+            padding: 2px; 
+            background: #fff; 
+        }
+        .mood-btn.selected { border-color: var(--c-dark); background: #b3e5fc; transform: scale(1.1); }
+        .mood-label-small { font-size: 0.7rem; color: #777; margin-top: -2px; display:none; }
+
+        .editor-photo-box { width: 70px; height: 70px; border: 2px dashed #ccc; background: #f9f9f9; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; transform: rotate(-2deg); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+        #editorImgPreview { width: 100%; height: 100%; object-fit: cover; border: 4px solid white; display: none; }
+
+        /* The Sidebar Customizer */
+        .editor-sidebar { width: 100px; background: #fff0f5; border-radius: 15px; padding: 10px; border: 2px solid var(--c-accent); display: flex; flex-direction: column; align-items: center; max-height: 400px; overflow-y: auto; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
         @media (max-width: 450px) {
-            .editor-sidebar {
-                width: 100%; /* Wide bar on bottom */
-                max-width: 280px; 
-                flex-direction: row; /* Horizontal items */
-                flex-wrap: wrap;
-                justify-content: center;
-                height: auto;
-                max-height: 150px;
-            }
+            .editor-sidebar { width: 100%; max-width: 280px; flex-direction: row; flex-wrap: wrap; justify-content: center; height: auto; max-height: 150px; }
             .editor-tabs { width: 100%; justify-content: center; margin-bottom: 5px; }
         }
-
         .editor-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
         .tab-btn { width: 25px; height: 25px; border-radius: 50%; border: 1px solid #ccc; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; background: white; }
         .tab-btn.active { background: var(--c-accent); border-color: var(--c-dark); }
@@ -172,6 +163,7 @@
         .confirm-actions { display: flex; gap: 10px; }
         .sticker-mode-area { margin-top: 15px; width: 100%; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center; }
         .sticker-link { color: white; cursor: pointer; text-decoration: underline; font-weight: bold; font-size: 1.1rem; }
+        .sticker-option { margin-top: 5px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .editor-buttons { display: flex; gap: 10px; margin-top: 20px; width: 100%; }
         .save-btn { flex: 1; padding: 12px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: var(--c-accent); border: 2px solid var(--c-dark); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
         .cancel-btn { padding: 12px 20px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: white; border: 2px solid var(--c-dark); }
@@ -253,7 +245,7 @@
 
     <div id="overlay" onclick="closeAllModals()"></div>
 
-    <!-- NEW EDITOR MODAL -->
+    <!-- EDITOR MODAL -->
     <div id="noteEditorModal" class="modal">
         <div class="editor-container-row">
             <div class="note-editor" id="noteEditorPreview">
@@ -279,18 +271,15 @@
                 <div id="tab-tape" class="customize-grid">
                     <input type="file" id="tapeUpload" accept="image/*" style="display:none;" onchange="handleAssetUpload(this, 'tape')">
                     <div class="upload-btn-style" onclick="document.getElementById('tapeUpload').click()">+</div>
-                    <!-- Tapes injected by JS -->
                 </div>
                 
                 <div id="tab-paper" class="customize-grid" style="display:none;">
                     <input type="file" id="paperUpload" accept="image/*" style="display:none;" onchange="handleAssetUpload(this, 'paper')">
                     <div class="upload-btn-style" onclick="document.getElementById('paperUpload').click()">+</div>
-                    <!-- Papers injected by JS -->
                 </div>
 
                 <div id="tab-font" class="customize-grid" style="display:none;">
                     <input type="color" id="fontColorPicker" value="#444444" onchange="applyFontColor(this.value)" style="width:100%; height:30px; border:none; cursor:pointer;">
-                    <!-- Fonts injected by JS -->
                 </div>
             </div>
         </div>
@@ -308,7 +297,7 @@
         </div>
     </div>
 
-    <!-- DRAW, SETTINGS, ETC (Standard) -->
+    <!-- DRAW MODAL -->
     <div id="drawModal" class="modal">
         <div class="modal-draw-content">
             <h3 id="drawModalTitle" style="margin:0 0 10px 0; text-align:center;">Art Studio 🎨</h3>
@@ -786,7 +775,12 @@
         function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
         function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
         function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
-        function closeConfirm(res) { document.getElementById('confirmModal').style.display='none'; document.getElementById('overlay').style.display='none'; if(res && confirmCallback) confirmCallback(); confirmCallback=null; }
+        function closeConfirm(res) { 
+            document.getElementById('confirmModal').style.display='none'; 
+            document.getElementById('overlay').style.display='none'; 
+            if(res && confirmCallback) confirmCallback(); 
+            confirmCallback=null; 
+        }
         function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
         function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
         function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
