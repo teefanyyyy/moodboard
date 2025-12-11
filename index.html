@@ -27,8 +27,6 @@
         .sidebar a { padding: 10px 30px; text-decoration: none; font-size: 1.4rem; color: var(--c-dark); display: block; cursor: pointer; }
         .sidebar-section { padding: 20px 30px; border-top: 1px dashed #ccc; margin-top: 10px; }
         .sidebar-title { font-weight: bold; margin-bottom: 10px; color: var(--c-dark); font-size: 1.2rem; }
-        .bg-option { display: inline-block; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #555; margin-right: 10px; cursor: pointer; }
-        .bg-cork { background: #bcaaa4; } .bg-grid { background: white; background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px); background-size: 10px 10px; } .bg-pink { background: #f8bbd0; } .bg-clouds { background: #e3f2fd; }
         .sidebar-btn { margin: 10px 30px; padding: 10px; background: #90a4ae; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 1.1rem; cursor: pointer; }
         .create-board-btn { background: var(--c-accent); color: #5d4037; border: 2px dashed #5d4037; }
         .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; }
@@ -64,7 +62,8 @@
         /* BOARD */
         .board-container { width: 100%; height: 60vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
         .pinterest-header { text-align: center; color: white; margin-bottom: 10px; }
-        .pinterest-title { font-size: 2.5rem; text-shadow: 2px 2px #5d4037; margin: 0; }
+        .pinterest-title { font-size: 2.5rem; text-shadow: 2px 2px #5d4037; margin: 0; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .edit-title-btn { font-size: 1.5rem; cursor: pointer; background: rgba(255,255,255,0.3); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         .pinterest-board { height: 75vh; width: 100%; margin-top: 10px; }
         .board-bg-cork { background-color: #bcaaa4 !important; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png') !important; background-size: auto !important; }
         .board-bg-grid { background-color: #fdfdfd !important; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px) !important; background-size: 30px 30px !important; }
@@ -96,7 +95,7 @@
         .rotate-handle { background-color: #64b5f6; left: 50%; top: -50px; transform: translateX(-50%); }
         .rotate-handle::after { content:''; position:absolute; top:38px; height:15px; width:2px; background:white; pointer-events:none;}
 
-        /* --- MODALS --- */
+        /* --- FANCY EDITOR MODAL --- */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; flex-direction: column; align-items: center; max-height: 90vh; overflow-y: auto; width: 95%; max-width: 450px; }
         .editor-container-row { display: flex; gap: 10px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; }
@@ -161,7 +160,7 @@
         .slider-row { display: flex; align-items: center; gap: 5px; width: 100%; font-size: 0.8rem; }
         input[type="range"].color-slider { flex-grow: 1; height: 5px; -webkit-appearance: none; border-radius: 5px; }
         .preview-box { width: 40px; height: 40px; border: 2px solid white; border-radius: 5px; background: #000; }
-        .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; min-height: 100px; }
         /* Background Options Buttons */
         .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
         .bg-preview-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
@@ -190,13 +189,6 @@
         <div class="sidebar-section">
             <div class="sidebar-title" onclick="openStatsModal()" style="cursor:pointer; background:#e1f5fe; padding:10px; border-radius:10px; text-align:center;">📊 View Mood Stats</div>
         </div>
-        <div class="sidebar-section">
-            <div class="sidebar-title">Background</div>
-            <div class="bg-option bg-cork" onclick="setBoardBg('cork')"></div>
-            <div class="bg-option bg-grid" onclick="setBoardBg('grid')"></div>
-            <div class="bg-option bg-pink" onclick="setBoardBg('pink')"></div>
-            <div class="bg-option bg-clouds" onclick="setBoardBg('clouds')"></div>
-        </div>
         <button class="sidebar-btn" onclick="openSettingsModal()">⚙️ Settings</button>
     </div>
 
@@ -208,7 +200,10 @@
 
     <div id="pinterest-container">
         <div class="pinterest-header">
-            <h2 id="pinboard-title" class="pinterest-title">My Board</h2>
+            <h2 id="pinboard-title" class="pinterest-title">
+                <span id="board-name-display">My Board</span>
+                <span class="edit-title-btn" onclick="renameCurrentBoard()">✎</span>
+            </h2>
             <div class="board-actions" style="justify-content: center; margin-top:10px;">
                 <button class="action-btn btn-note" onclick="openNoteEditor(activeBoardId)">📝 Sticky</button>
                 <button class="action-btn btn-draw" onclick="openDrawModal(activeBoardId)">🎨 Paint</button>
@@ -383,6 +378,8 @@
         let isLocked = true;
         let currentMode = 'weeks'; 
         let activeBoardId = null;
+        
+        // Editor State
         let currentTape = null; let currentPaper = null; let currentFont = 'Gaegu'; let currentFontColor = '#444';
 
         window.onload = function() {
@@ -418,18 +415,47 @@
         function showPinterestBoard(boardId) {
             currentMode = 'pinterest'; activeBoardId = boardId;
             const board = pinterestBoards.find(b => b.id === boardId);
-            document.getElementById('pinboard-title').innerText = board ? board.name : "My Board";
+            document.getElementById('board-name-display').innerText = board ? board.name : "My Board";
+            
             document.getElementById('weeks-container').style.display = 'none';
             document.getElementById('pinterest-container').style.display = 'block';
             renderActivePinterestBoard();
             if(boardBgs[boardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[boardId]);
             else applyBgToContainer(document.getElementById('active-board-container'), {type:'cork'});
-            toggleNav();
+            
+            // Auto close nav on click
+            // (toggleNav call already in onclick from renderBoardsList)
         }
 
-        function createNewBoard() { const name = prompt("Enter a name for your new Pinboard:"); if(name) { const newBoard = { id: 'pin-' + Date.now(), name: name }; if(!pinterestBoards) pinterestBoards = []; pinterestBoards.push(newBoard); saveData('boards'); renderBoardsList(); showPinterestBoard(newBoard.id); } }
-        function renderBoardsList() { const list = document.getElementById('sidebar-boards-list'); list.innerHTML = ''; if(pinterestBoards) { pinterestBoards.forEach(board => { const a = document.createElement('a'); a.innerText = "📌 " + board.name; a.onclick = () => showPinterestBoard(board.id); list.appendChild(a); }); } }
-        function exportBoardAsPNG() { document.body.classList.add('is-locked'); const boardElement = document.getElementById('active-board-container'); html2canvas(boardElement, { useCORS: true, scale: 2 }).then(canvas => { const link = document.createElement('a'); link.download = document.getElementById('pinboard-title').innerText + '.png'; link.href = canvas.toDataURL(); link.click(); if(!isLocked) document.body.classList.remove('is-locked'); }); }
+        function createNewBoard() { const name = prompt("Enter a name for your new Pinboard:"); if(name) { const newBoard = { id: 'pin-' + Date.now(), name: name }; if(!pinterestBoards) pinterestBoards = []; pinterestBoards.push(newBoard); saveData('boards'); renderBoardsList(); showPinterestBoard(newBoard.id); toggleNav(); } }
+        
+        function renderBoardsList() { 
+            const list = document.getElementById('sidebar-boards-list'); list.innerHTML = ''; 
+            if(pinterestBoards) { 
+                pinterestBoards.forEach(board => { 
+                    const a = document.createElement('a'); 
+                    a.innerText = "📌 " + board.name; 
+                    a.onclick = () => { showPinterestBoard(board.id); toggleNav(); }; 
+                    list.appendChild(a); 
+                }); 
+            } 
+        }
+        
+        function renameCurrentBoard() {
+            if(!activeBoardId) return;
+            const board = pinterestBoards.find(b => b.id === activeBoardId);
+            if(board) {
+                const newName = prompt("Rename Board:", board.name);
+                if(newName) {
+                    board.name = newName;
+                    saveData('boards');
+                    document.getElementById('board-name-display').innerText = newName;
+                    renderBoardsList();
+                }
+            }
+        }
+
+        function exportBoardAsPNG() { document.body.classList.add('is-locked'); const boardElement = document.getElementById('active-board-container'); html2canvas(boardElement, { useCORS: true, scale: 2 }).then(canvas => { const link = document.createElement('a'); link.download = document.getElementById('board-name-display').innerText + '.png'; link.href = canvas.toDataURL(); link.click(); if(!isLocked) document.body.classList.remove('is-locked'); }); }
         function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; toggleNav(); }
         function askHardReset() { const code = prompt("To delete EVERYTHING, type the word 'DELETE' below:"); if (code === "DELETE") { localStorage.clear(); location.reload(); } else if (code !== null) { alert("Incorrect code. Nothing was deleted."); } }
 
@@ -594,7 +620,11 @@
             const container = document.getElementById('bg-list-container'); container.innerHTML = '';
             const addBtn = document.createElement('div'); addBtn.className = 'bg-add-btn'; addBtn.innerText = '+'; addBtn.onclick = () => document.getElementById('bgAssetUpload').click(); container.appendChild(addBtn);
             DEFAULT_BGS.forEach(bg => { const btn = document.createElement('div'); btn.className = 'bg-btn bg-' + bg.type; btn.innerText = bg.name; btn.onclick = () => setBoardBg(bg.type); container.appendChild(btn); });
-            userBackgrounds.forEach(bg => { const btn = document.createElement('div'); btn.className = 'bg-preview-btn'; btn.style.backgroundImage = `url('${bg.src}')`; btn.onclick = () => setBoardBg('custom', bg.src); container.appendChild(btn); });
+            
+            // Fix: ensure array exists
+            (userBackgrounds || []).forEach(bg => { 
+                const btn = document.createElement('div'); btn.className = 'bg-preview-btn'; btn.style.backgroundImage = `url('${bg.src}')`; btn.onclick = () => setBoardBg('custom', bg.src); container.appendChild(btn); 
+            });
         }
         function handleBgAssetUpload(input) {
             if(input.files && input.files[0]) {
@@ -749,7 +779,7 @@
             document.getElementById('drawModalTitle').innerText="Art Studio 🎨";
             document.getElementById('drawModal').style.display='flex';
             document.getElementById('overlay').style.display='block';
-            setTimeout(resizeCanvas, 50); // FIX: Wait for layout
+            setTimeout(resizeCanvas, 50); 
         }
         function closeAllModals(){
             document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
@@ -760,7 +790,7 @@
         function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
         function closeConfirm(res) { 
             document.getElementById('confirmModal').style.display='none'; 
-            document.getElementById('overlay').style.display='none'; // Force hide overlay
+            document.getElementById('overlay').style.display='none'; 
             if(res && confirmCallback) confirmCallback(); 
             confirmCallback=null; 
         }
