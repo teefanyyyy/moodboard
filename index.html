@@ -96,7 +96,7 @@
         .rotate-handle { background-color: #64b5f6; left: 50%; top: -50px; transform: translateX(-50%); }
         .rotate-handle::after { content:''; position:absolute; top:38px; height:15px; width:2px; background:white; pointer-events:none;}
 
-        /* --- FANCY EDITOR MODAL --- */
+        /* --- MODALS --- */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1500; backdrop-filter: blur(4px); }
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; flex-direction: column; align-items: center; max-height: 90vh; overflow-y: auto; width: 95%; max-width: 450px; }
         .editor-container-row { display: flex; gap: 10px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; }
@@ -144,7 +144,7 @@
         .save-btn { flex: 1; padding: 12px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: var(--c-accent); border: 2px solid var(--c-dark); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
         .cancel-btn { padding: 12px 20px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; background: white; border: 2px solid var(--c-dark); }
         
-        .modal-draw-content { background: white; padding: 15px; border-radius: 20px; border: 3px solid var(--c-dark); width: 95%; max-width: 400px; }
+        .modal-draw-content { background: white; padding: 15px; border-radius: 20px; border: 3px solid var(--c-dark); width: 95%; max-width: 400px; z-index: 2001; }
         .canvas-container { border: 2px dashed #ccc; background: white; width: 100%; height: 250px; overflow: hidden; touch-action: none; }
         .brush-rack { display: flex; gap: 5px; justify-content: space-between; margin-bottom: 5px; }
         .brush-btn { width: 40px; height: 40px; border-radius: 8px; border: 1px solid #ddd; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -435,14 +435,16 @@
 
         /* --- DATA HANDLING --- */
         function loadFromLocal(){ 
-            if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); 
-            if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); 
-            if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); 
-            if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards')); 
-            if(localStorage.getItem('moodboard_assets')) { 
-                const assets = JSON.parse(localStorage.getItem('moodboard_assets')); 
-                userTapes=assets.tapes||[]; userPapers=assets.papers||[]; userBackgrounds=assets.backgrounds||[];
-            } 
+            try {
+                if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); 
+                if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); 
+                if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); 
+                if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards')); 
+                if(localStorage.getItem('moodboard_assets')) { 
+                    const assets = JSON.parse(localStorage.getItem('moodboard_assets')); 
+                    userTapes=assets.tapes||[]; userPapers=assets.papers||[]; userBackgrounds=assets.backgrounds||[];
+                } 
+            } catch(e) { console.error("Error loading local data", e); }
             renderApp(); 
         }
         function loadFromFirebase(){ 
@@ -739,6 +741,31 @@
         function deleteItem(id){if(isLocked)return; showConfirm("Delete this item?",()=>{if(useFirebase)db.collection("items").doc(String(id)).delete();else{items=items.filter(i=>i.id!==id);saveData('items');renderAllItems();}});}
         function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
 
+        /* --- HELPERS --- */
+        function openBgModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block';}
+        function openDrawModal(id){
+            if(isLocked)return; 
+            currentActiveWeek=id;
+            document.getElementById('drawModalTitle').innerText="Art Studio 🎨";
+            document.getElementById('drawModal').style.display='flex';
+            document.getElementById('overlay').style.display='block';
+            setTimeout(resizeCanvas, 50); // FIX: Wait for layout
+        }
+        function closeAllModals(){
+            document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
+            document.getElementById('overlay').style.display='none';
+        }
+        function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
+        function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
+        function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
+        function closeConfirm(res) { 
+            document.getElementById('confirmModal').style.display='none'; 
+            document.getElementById('overlay').style.display='none'; // Force hide overlay
+            if(res && confirmCallback) confirmCallback(); 
+            confirmCallback=null; 
+        }
+        function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
+        function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
         function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
         function toggleNav(){const sb=document.getElementById("mySidebar");sb.style.width=sb.style.width==="250px"?"0":"250px";}
         function setBoardBg(t,u=null){if(u)boardBgs[currentActiveWeek]={type:'custom',url:u};else boardBgs[currentActiveWeek]={type:t,url:null};applyBgToContainer(document.getElementById(currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container"),boardBgs[currentActiveWeek]);saveData('bgs');closeAllModals();}
