@@ -42,6 +42,8 @@
         .week-section { margin-bottom: 50px; }
         .week-header { padding: 0 15px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; white-space: nowrap; }
+        
+        /* ACTIONS */
         .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
         body.is-locked .board-actions, body.is-locked .goal-add-btn, body.is-locked .control-handle { display: none !important; }
         body.is-locked .draggable-item { pointer-events: none; }
@@ -315,13 +317,11 @@
     <div id="confirmModal" class="modal"><div class="confirm-box"><div class="confirm-msg" id="confirmMsg">Are you sure?</div><div class="confirm-actions"><button class="cancel-btn" onclick="closeConfirm(false)">No</button><button class="save-btn" style="background:#ef5350; color:white;" onclick="closeConfirm(true)">Yes</button></div></div></div>
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     
-    <!-- BACKGROUND MODAL (UPDATED) -->
+    <!-- BACKGROUND MODAL -->
     <div id="bgModal" class="modal">
         <div class="modal-draw-content" style="text-align:center;">
             <h3>Choose Background 🖼️</h3>
-            <div id="bg-list-container" class="bg-grid-container">
-                <!-- JS will inject options here -->
-            </div>
+            <div id="bg-list-container" class="bg-grid-container"></div>
             <input type="file" id="bgAssetUpload" accept="image/*" style="display:none;" onchange="handleBgAssetUpload(this)">
             <br>
             <button class="cancel-btn" onclick="closeAllModals()">Close</button>
@@ -383,8 +383,6 @@
         let isLocked = true;
         let currentMode = 'weeks'; 
         let activeBoardId = null;
-        
-        // Editor State
         let currentTape = null; let currentPaper = null; let currentFont = 'Gaegu'; let currentFontColor = '#444';
 
         window.onload = function() {
@@ -482,16 +480,13 @@
         function openNoteEditor(weekIdOrItem) {
             if(isLocked) return;
             const modal = document.getElementById('noteEditorModal');
-            
-            // Reset States
             currentEditorImage = null; selectedMoodSrc = null; 
             currentTape = null; currentPaper = null; currentFont = 'Gaegu'; currentFontColor = '#444';
-            
             document.getElementById('editorImgPreview').style.display = 'none'; 
             document.getElementById('photoLabel').style.display = 'block'; 
             document.getElementById('editorFileInput').value = '';
             document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
-            renderEditorAssets(); // Refresh lists
+            renderEditorAssets();
 
             if (typeof weekIdOrItem === 'string') { 
                 currentActiveWeek = weekIdOrItem; editingItemId = null; 
@@ -499,17 +494,13 @@
             } else { 
                 const item = weekIdOrItem; editingItemId = item.id; currentActiveWeek = item.weekId; 
                 document.getElementById('editorText').value = item.text || ""; 
-                
-                // Load Visuals
                 if(item.moodImg) { selectedMoodSrc = item.moodImg; const match = Array.from(document.querySelectorAll('.mood-btn')).find(img => img.src === item.moodImg); if(match) match.classList.add('selected'); }
                 if(item.imgUrl) { currentEditorImage = item.imgUrl; document.getElementById('editorImgPreview').src = item.imgUrl; document.getElementById('editorImgPreview').style.display = 'block'; document.getElementById('photoLabel').style.display = 'none'; } 
-                
                 if(item.tapeUrl) currentTape = item.tapeUrl;
                 if(item.paperUrl) currentPaper = item.paperUrl;
                 if(item.fontFamily) currentFont = item.fontFamily;
                 if(item.fontColor) currentFontColor = item.fontColor;
             }
-            
             applyEditorPreviewStyles();
             modal.style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; document.getElementById('editorText').focus();
         }
@@ -525,8 +516,7 @@
         function renderEditorAssets() {
             // Tapes
             const tapeDiv = document.getElementById('tab-tape');
-            const uploadTape = tapeDiv.firstElementChild; 
-            const uploadBtnTape = tapeDiv.children[1];
+            const uploadTape = tapeDiv.firstElementChild; const uploadBtnTape = tapeDiv.children[1];
             tapeDiv.innerHTML = ''; tapeDiv.appendChild(uploadTape); tapeDiv.appendChild(uploadBtnTape);
             [...DEFAULT_TAPES, ...userTapes].forEach(t => {
                 const d = document.createElement('div'); d.className = 'style-opt';
@@ -534,11 +524,9 @@
                 d.onclick = () => { currentTape = t.src; applyEditorPreviewStyles(); };
                 tapeDiv.appendChild(d);
             });
-
             // Papers
             const paperDiv = document.getElementById('tab-paper');
-            const uploadPaper = paperDiv.firstElementChild; 
-            const uploadBtnPaper = paperDiv.children[1];
+            const uploadPaper = paperDiv.firstElementChild; const uploadBtnPaper = paperDiv.children[1];
             paperDiv.innerHTML = ''; paperDiv.appendChild(uploadPaper); paperDiv.appendChild(uploadBtnPaper);
             [...DEFAULT_PAPERS, ...userPapers].forEach(p => {
                 const d = document.createElement('div'); d.className = 'style-opt';
@@ -546,7 +534,6 @@
                 d.onclick = () => { currentPaper = p.bg; applyEditorPreviewStyles(); };
                 paperDiv.appendChild(d);
             });
-
             // Fonts
             const fontDiv = document.getElementById('tab-font');
             fontDiv.innerHTML = `<input type="color" id="fontColorPicker" value="${currentFontColor}" onchange="applyFontColor(this.value)" style="width:100%; height:30px; border:none; cursor:pointer;">`;
@@ -577,31 +564,16 @@
             const editor = document.getElementById('noteEditorPreview');
             const tape = document.getElementById('editorTapePreview');
             const text = document.getElementById('editorText');
-
-            if(currentPaper) {
-                if(currentPaper.includes('url')) editor.style.background = currentPaper;
-                else { editor.style.background = ''; editor.style.backgroundColor = currentPaper; }
-            } else { editor.style.background = '#fff'; }
-
-            if(currentTape) { tape.style.backgroundColor = 'transparent'; tape.style.backgroundImage = `url('${currentTape}')`; }
-            else { tape.style.backgroundImage = ''; tape.style.backgroundColor = 'rgba(100, 221, 231, 0.6)'; }
-
-            text.style.fontFamily = currentFont;
-            text.style.color = currentFontColor;
+            if(currentPaper) { if(currentPaper.includes('url')) editor.style.background = currentPaper; else { editor.style.background = ''; editor.style.backgroundColor = currentPaper; } } else { editor.style.background = '#fff'; }
+            if(currentTape) { tape.style.backgroundColor = 'transparent'; tape.style.backgroundImage = `url('${currentTape}')`; } else { tape.style.backgroundImage = ''; tape.style.backgroundColor = 'rgba(100, 221, 231, 0.6)'; }
+            text.style.fontFamily = currentFont; text.style.color = currentFontColor;
         }
 
         function saveFromEditor(type) {
             const text = document.getElementById('editorText').value; const hasBorder = document.getElementById('stickerBorderCheck').checked;
             let moodName = "Unknown"; const moodObj = CUSTOM_MOODS.find(m => m.src === selectedMoodSrc); if(moodObj) moodName = moodObj.name;
             const baseW = type === 'note' ? 220 : 200; const baseH = type === 'note' ? 260 : 200;
-            
-            const newItem = { 
-                id: editingItemId || Date.now(), type, text, 
-                moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, 
-                weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder,
-                tapeUrl: currentTape, paperUrl: currentPaper, fontFamily: currentFont, fontColor: currentFontColor
-            };
-            
+            const newItem = { id: editingItemId || Date.now(), type, text, moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder, tapeUrl: currentTape, paperUrl: currentPaper, fontFamily: currentFont, fontColor: currentFontColor };
             if (editingItemId) { const existing = items.find(i => i.id === editingItemId); if(existing) { newItem.x = existing.x; newItem.y = existing.y; newItem.w = existing.w; newItem.h = existing.h; newItem.rot = existing.rot; const idx = items.indexOf(existing); items[idx] = newItem; } } else { items.push(newItem); }
             if(useFirebase) db.collection("items").doc(String(newItem.id)).set(newItem); else { saveData('items'); renderAllItems(); }
             closeAllModals();
@@ -615,44 +587,13 @@
         }
 
         /* --- BACKGROUND MODAL LOGIC --- */
-        function openBgModal(id){
-            if(isLocked) return; 
-            currentActiveWeek = id;
-            renderBgModalItems();
-            document.getElementById('bgModal').style.display='flex'; 
-            document.getElementById('overlay').style.display='block';
-        }
-
+        function openBgModal(id){ if(isLocked) return; currentActiveWeek = id; renderBgModalItems(); document.getElementById('bgModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
         function renderBgModalItems() {
-            const container = document.getElementById('bg-list-container');
-            container.innerHTML = '';
-            
-            // Add Upload Button First
-            const addBtn = document.createElement('div');
-            addBtn.className = 'bg-add-btn';
-            addBtn.innerText = '+';
-            addBtn.onclick = () => document.getElementById('bgAssetUpload').click();
-            container.appendChild(addBtn);
-
-            // Defaults
-            DEFAULT_BGS.forEach(bg => {
-                const btn = document.createElement('div');
-                btn.className = 'bg-btn bg-' + bg.type;
-                btn.innerText = bg.name;
-                btn.onclick = () => setBoardBg(bg.type);
-                container.appendChild(btn);
-            });
-
-            // User Uploads
-            userBackgrounds.forEach(bg => {
-                const btn = document.createElement('div');
-                btn.className = 'bg-preview-btn';
-                btn.style.backgroundImage = `url('${bg.src}')`;
-                btn.onclick = () => setBoardBg('custom', bg.src);
-                container.appendChild(btn);
-            });
+            const container = document.getElementById('bg-list-container'); container.innerHTML = '';
+            const addBtn = document.createElement('div'); addBtn.className = 'bg-add-btn'; addBtn.innerText = '+'; addBtn.onclick = () => document.getElementById('bgAssetUpload').click(); container.appendChild(addBtn);
+            DEFAULT_BGS.forEach(bg => { const btn = document.createElement('div'); btn.className = 'bg-btn bg-' + bg.type; btn.innerText = bg.name; btn.onclick = () => setBoardBg(bg.type); container.appendChild(btn); });
+            userBackgrounds.forEach(bg => { const btn = document.createElement('div'); btn.className = 'bg-preview-btn'; btn.style.backgroundImage = `url('${bg.src}')`; btn.onclick = () => setBoardBg('custom', bg.src); container.appendChild(btn); });
         }
-
         function handleBgAssetUpload(input) {
             if(input.files && input.files[0]) {
                 const r = new FileReader();
@@ -664,61 +605,29 @@
                 r.readAsDataURL(input.files[0]);
             }
         }
-
-        function setBoardBg(t, u=null){
-            if(u) boardBgs[currentActiveWeek]={type:'custom',url:u}; 
-            else boardBgs[currentActiveWeek]={type:t,url:null};
-            
-            // Apply immediately
-            const containerId = currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container";
-            applyBgToContainer(document.getElementById(containerId), boardBgs[currentActiveWeek]);
-            
-            saveData('bgs'); 
-            closeAllModals();
-        }
+        function setBoardBg(t, u=null){ if(u) boardBgs[currentActiveWeek]={type:'custom',url:u}; else boardBgs[currentActiveWeek]={type:t,url:null}; const containerId = currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container"; applyBgToContainer(document.getElementById(containerId), boardBgs[currentActiveWeek]); saveData('bgs'); closeAllModals(); }
 
         /* --- DOM CREATION --- */
         function createDOMItem(item) {
             let containerId;
-            if(item.weekId.startsWith('pin-')) {
-                if(currentMode !== 'pinterest' || item.weekId !== activeBoardId) return;
-                containerId = 'active-board-inner';
-            } else {
-                if(currentMode !== 'weeks') return;
-                containerId = 'board-' + item.weekId;
-            }
-
+            if(item.weekId.startsWith('pin-')) { if(currentMode !== 'pinterest' || item.weekId !== activeBoardId) return; containerId = 'active-board-inner'; } else { if(currentMode !== 'weeks') return; containerId = 'board-' + item.weekId; }
             const board = document.getElementById(containerId); if(!board) return;
             const div = document.createElement('div'); div.classList.add('draggable-item');
             div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
             div.style.transform = `rotate(${item.rot}deg)`; div.style.zIndex = 1;
-
             const baseW = item.type === 'note' ? 220 : 200; const baseH = item.type === 'note' ? 260 : 200;
             const scaleX = item.w / baseW || 1; const scaleY = item.h / baseH || 1;
-
             let handles = `<div class="control-handle resize-handle">↘</div><div class="control-handle delete-handle">✖</div><div class="control-handle edit-handle">✎</div><div class="control-handle rotate-handle"></div>`;
-            
             let innerContent = '';
             if(item.type === 'note') {
                 let moodContent = ''; if(item.moodImg && item.moodName) moodContent = `<div class="mood-tag"><img src="${item.moodImg}"><span>${item.moodName}</span></div>`;
-                
-                let paperStyle = '';
-                if(item.paperUrl) { if(item.paperUrl.includes('url')) paperStyle = `background: ${item.paperUrl};`; else paperStyle = `background-color: ${item.paperUrl};`; }
-                let tapeStyle = '';
-                if(item.tapeUrl) tapeStyle = `background-image: url('${item.tapeUrl}'); background-color: transparent;`;
+                let paperStyle = ''; if(item.paperUrl) { if(item.paperUrl.includes('url')) paperStyle = `background: ${item.paperUrl};`; else paperStyle = `background-color: ${item.paperUrl};`; }
+                let tapeStyle = ''; if(item.tapeUrl) tapeStyle = `background-image: url('${item.tapeUrl}'); background-color: transparent;`;
                 let fontStyle = `font-family: '${item.fontFamily || 'Gaegu'}', cursive; color: ${item.fontColor || '#444'};`;
-
-                innerContent = `
-                <div class="note-paper" style="${paperStyle} ${fontStyle}">
-                    <div class="tape" style="${tapeStyle}"></div>
-                    <div class="note-text-area">${item.text}</div>
-                    <div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div>
-                </div>`;
+                innerContent = `<div class="note-paper" style="${paperStyle} ${fontStyle}"><div class="tape" style="${tapeStyle}"></div><div class="note-text-area">${item.text}</div><div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div></div>`;
             } else {
-                const borderClass = item.hasBorder ? 'sticker-border' : '';
-                if(item.imgUrl) innerContent = `<div class="${borderClass}"><img src="${item.imgUrl}" class="sticker-img" style="width:100%; height:100%; object-fit:contain;"></div>`;
+                const borderClass = item.hasBorder ? 'sticker-border' : ''; if(item.imgUrl) innerContent = `<div class="${borderClass}"><img src="${item.imgUrl}" class="sticker-img" style="width:100%; height:100%; object-fit:contain;"></div>`;
             }
-
             const scaledWrapper = `<div class="scalable-content" style="width:${baseW}px; height:${baseH}px; transform: scale(${scaleX}, ${scaleY});">${innerContent}</div>`;
             div.innerHTML = handles + scaledWrapper;
             setupItemEvents(div, item, baseW, baseH);
@@ -779,7 +688,6 @@
                 div.querySelector('.edit-handle').addEventListener('touchstart', (e) => { e.stopPropagation(); openNoteEditor(item); });
             }
 
-            // TOUCH PINCH/MOVE
             let initialDist=0; let initialAngle=0; let initialRot=0; let startX=0; let startY=0; let initialLeft=0; let initialTop=0; let initialW=0; let initialH=0;
             function handleItemTouchStart(e) {
                 if(isLocked) return;
@@ -817,8 +725,6 @@
             div.addEventListener('touchstart', handleItemTouchStart, {passive:false});
             div.addEventListener('touchmove', handleItemTouchMove, {passive:false});
             div.addEventListener('touchend', handleItemTouchEnd);
-            
-            // Mouse Fallback
             div.addEventListener('mousedown', (e) => {
                 if(isLocked || e.target.classList.contains('control-handle')) return;
                 document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
@@ -839,7 +745,14 @@
         function handleBgUpload(i){if(i.files[0]){const r=new FileReader();r.onload=(e)=>setBoardBg('custom',e.target.result);r.readAsDataURL(i.files[0]);}}
         function applyBgToContainer(c,d){if(!d || !c)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
         function applyAllBoardBgs(){ activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);}); if(activeBoardId && boardBgs[activeBoardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[activeBoardId]); }
-        
+        function initWeeks() { const today = new Date(); const currentWeekId = getWeekId(today); const prevDate = new Date(today); prevDate.setDate(today.getDate() - 7); const prevWeekId = getWeekId(prevDate); if(!activeWeeks.includes(prevWeekId)) activeWeeks.push(prevWeekId); if(!activeWeeks.includes(currentWeekId)) activeWeeks.push(currentWeekId); activeWeeks.sort(); const container = document.getElementById('weeks-container'); const sidebarList = document.getElementById('sidebar-weeks-list'); container.innerHTML = ''; sidebarList.innerHTML = ''; activeWeeks.forEach(id => { const datesLabel = getWeekLabel(id); const link = document.createElement('a'); link.href = "#"; link.innerText = datesLabel; link.onclick = () => { showWeeks(); window.location.hash = id; }; sidebarList.appendChild(link); const section = document.createElement('div'); section.className = 'week-section'; section.id = id; section.innerHTML = ` <div class="week-header"> <div class="week-title">${datesLabel}</div> <div class="board-actions"> <button class="action-btn btn-note" onclick="openNoteEditor('${id}')">📝 Sticky</button> <button class="action-btn btn-draw" onclick="openDrawModal('${id}')">🎨 Paint</button> <button class="action-btn btn-bg" onclick="openBgModal('${id}')">🖼️ BG</button> </div> </div> <div class="goals-strip"> <div class="goal-header"><span>Weekly Goals</span><button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button></div> <ul class="goal-list" id="goals-${id}"></ul> </div> <div class="board-container" id="${id}-container"> <div class="board-inner" id="board-${id}" onclick="deselectAll(event)"></div> </div>`; container.appendChild(section); }); }
+        function getWeekId(dateObj) { const d = new Date(dateObj); const day = d.getDay(); const diff = d.getDate() - day; const sunday = new Date(d.setDate(diff)); return "week-" + sunday.toISOString().split('T')[0]; }
+        function getWeekLabel(weekId) { const dateStr = weekId.replace('week-', ''); const start = new Date(dateStr); const end = new Date(start); end.setDate(start.getDate() + 6); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return `${monthNames[start.getMonth()]} ${start.getDate()} - ${end.getDate()}`; }
+        function addGoal(id){ if(isLocked) return; const t = prompt("New Goal:"); if(t){ if(!goals[id]) goals[id]=[]; goals[id].push({text:t, done:false}); saveData('goals'); renderGoals(); } }
+        function toggleGoal(id, idx){ if(isLocked) return; const d = !goals[id][idx].done; goals[id][idx].done = d; saveData('goals'); renderGoals(); if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
+        function deleteGoal(id, idx){ if(isLocked) return; showConfirm("Delete this goal?",()=>{ goals[id].splice(idx,1); saveData('goals'); renderGoals(); }); }
+        function renderGoals(){ for(const[id,list]of Object.entries(goals)){ const ul=document.getElementById('goals-'+id); if(!ul) continue; ul.innerHTML=''; list.forEach((g,i)=>{ const li=document.createElement('li'); li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`; ul.appendChild(li); }); } }
+
         /* --- DRAW CANVAS --- */
         const canvas=document.getElementById('drawCanvas');const ctx=canvas.getContext('2d');let currentBrush='pen';let isDrawing=false;
         function resizeCanvas(){const container=document.querySelector('.canvas-container');canvas.width=container.clientWidth;canvas.height=container.clientHeight;}
