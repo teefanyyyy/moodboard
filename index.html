@@ -23,7 +23,7 @@
         .header-container { text-align: center; margin: 20px 0; display: flex; justify-content: center; }
         .main-header-img { max-width: 85%; height: auto; max-height: 150px; filter: drop-shadow(3px 3px 0px #5d4037); }
         .hamburger { position: fixed; top: 10px; left: 10px; background: white; padding: 8px 12px; font-size: 1.5rem; border-radius: 10px; cursor: pointer; z-index: 2000; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border: 2px solid var(--c-dark); }
-        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2001; top: 0; left: 0; background-color: #fff3e0; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 3000; top: 0; left: 0; background-color: #fff3e0; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
         .sidebar a { padding: 10px 30px; text-decoration: none; font-size: 1.4rem; color: var(--c-dark); display: block; cursor: pointer; }
         .sidebar-section { padding: 20px 30px; border-top: 1px dashed #ccc; margin-top: 10px; }
         .sidebar-title { font-weight: bold; margin-bottom: 10px; color: var(--c-dark); font-size: 1.2rem; }
@@ -161,10 +161,24 @@
         input[type="range"].color-slider { flex-grow: 1; height: 5px; -webkit-appearance: none; border-radius: 5px; }
         .preview-box { width: 40px; height: 40px; border: 2px solid white; border-radius: 5px; background: #000; }
         .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; min-height: 100px; }
-        /* Background Options Buttons */
-        .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
-        .bg-preview-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
-        .bg-add-btn { height: 60px; border: 2px dashed #888; background: #eee; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: #555; }
+        /* Background Options Buttons (FIXED VISUALS) */
+        .bg-btn { 
+            height: 80px; 
+            border: 2px solid #555; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            color: #333; 
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.8);
+            background-size: cover;
+            background-position: center;
+        }
+        .bg-preview-btn { height: 80px; border: 2px solid #555; border-radius: 10px; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
+        .bg-add-btn { height: 80px; border: 2px dashed #888; background: #eee; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2rem; color: #555; }
         .stats-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 25px; width: 320px; font-size: 1.2rem; }
         .stat-row { display: flex; align-items: center; margin-bottom: 10px; }
         .stat-label { width: 100px; }
@@ -233,30 +247,25 @@
                     </div>
                 </div>
             </div>
-            
             <div class="editor-sidebar">
                 <div class="editor-tabs">
                     <div class="tab-btn active" onclick="setEditorTab('tape')">🎞️</div>
                     <div class="tab-btn" onclick="setEditorTab('paper')">📄</div>
                     <div class="tab-btn" onclick="setEditorTab('font')">🔤</div>
                 </div>
-                
                 <div id="tab-tape" class="customize-grid">
                     <input type="file" id="tapeUpload" accept="image/*" style="display:none;" onchange="handleAssetUpload(this, 'tape')">
                     <div class="upload-btn-style" onclick="document.getElementById('tapeUpload').click()">+</div>
                 </div>
-                
                 <div id="tab-paper" class="customize-grid" style="display:none;">
                     <input type="file" id="paperUpload" accept="image/*" style="display:none;" onchange="handleAssetUpload(this, 'paper')">
                     <div class="upload-btn-style" onclick="document.getElementById('paperUpload').click()">+</div>
                 </div>
-
                 <div id="tab-font" class="customize-grid" style="display:none;">
                     <input type="color" id="fontColorPicker" value="#444444" onchange="applyFontColor(this.value)" style="width:100%; height:30px; border:none; cursor:pointer;">
                 </div>
             </div>
         </div>
-
         <div class="editor-buttons">
             <button class="cancel-btn" onclick="closeAllModals()">Cancel</button>
             <button class="save-btn" onclick="saveFromEditor('note')">Stick It! 📌</button>
@@ -349,11 +358,12 @@
             { id: 'pink', bg: '#f8bbd0' },
             { id: 'grid', bg: 'url("https://www.transparenttextures.com/patterns/graphy.png") #fff' }
         ];
+        // Defined here with CSS properties so buttons look like the backgrounds
         const DEFAULT_BGS = [
-            { id: 'cork', type: 'cork', name: 'Cork' },
-            { id: 'grid', type: 'grid', name: 'Grid' },
-            { id: 'pink', type: 'pink', name: 'Pink' },
-            { id: 'clouds', type: 'clouds', name: 'Clouds' }
+            { id: 'cork', type: 'cork', name: 'Cork', style: "background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-color: #bcaaa4;" },
+            { id: 'grid', type: 'grid', name: 'Grid', style: "background-color: #fdfdfd; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px); background-size: 20px 20px;" },
+            { id: 'pink', type: 'pink', name: 'Pink', style: "background-color: #f8bbd0; background-image: radial-gradient(#f48fb1 2px, transparent 2px); background-size: 20px 20px;" },
+            { id: 'clouds', type: 'clouds', name: 'Clouds', style: "background-color: #e3f2fd; background-image: radial-gradient(white 20%, transparent 20%), radial-gradient(white 20%, transparent 20%); background-position: 0 0, 50px 50px; background-size: 100px 100px;" }
         ];
         const CUSTOM_FONTS = ['Gaegu', 'Indie Flower', 'Patrick Hand', 'Permanent Marker', 'Shadows Into Light'];
 
@@ -423,11 +433,10 @@
             if(boardBgs[boardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[boardId]);
             else applyBgToContainer(document.getElementById('active-board-container'), {type:'cork'});
             
-            // Auto close nav on click
-            // (toggleNav call already in onclick from renderBoardsList)
+            // Auto close nav on click - handled in list logic
         }
 
-        function createNewBoard() { const name = prompt("Enter a name for your new Pinboard:"); if(name) { const newBoard = { id: 'pin-' + Date.now(), name: name }; if(!pinterestBoards) pinterestBoards = []; pinterestBoards.push(newBoard); saveData('boards'); renderBoardsList(); showPinterestBoard(newBoard.id); toggleNav(); } }
+        function createNewBoard() { const name = prompt("Enter a name for your new Pinboard:"); if(name) { const newBoard = { id: 'pin-' + Date.now(), name: name }; if(!pinterestBoards) pinterestBoards = []; pinterestBoards.push(newBoard); saveData('boards'); renderBoardsList(); showPinterestBoard(newBoard.id); } }
         
         function renderBoardsList() { 
             const list = document.getElementById('sidebar-boards-list'); list.innerHTML = ''; 
@@ -614,17 +623,29 @@
             closeAllModals(); clearCanvas();
         }
 
-        /* --- BACKGROUND MODAL LOGIC --- */
+        /* --- BACKGROUND MODAL LOGIC (FIXED) --- */
         function openBgModal(id){ if(isLocked) return; currentActiveWeek = id; renderBgModalItems(); document.getElementById('bgModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
         function renderBgModalItems() {
             const container = document.getElementById('bg-list-container'); container.innerHTML = '';
-            const addBtn = document.createElement('div'); addBtn.className = 'bg-add-btn'; addBtn.innerText = '+'; addBtn.onclick = () => document.getElementById('bgAssetUpload').click(); container.appendChild(addBtn);
-            DEFAULT_BGS.forEach(bg => { const btn = document.createElement('div'); btn.className = 'bg-btn bg-' + bg.type; btn.innerText = bg.name; btn.onclick = () => setBoardBg(bg.type); container.appendChild(btn); });
             
-            // Fix: ensure array exists
-            (userBackgrounds || []).forEach(bg => { 
-                const btn = document.createElement('div'); btn.className = 'bg-preview-btn'; btn.style.backgroundImage = `url('${bg.src}')`; btn.onclick = () => setBoardBg('custom', bg.src); container.appendChild(btn); 
+            // Add Upload Button
+            const addBtn = document.createElement('div'); addBtn.className = 'bg-add-btn'; addBtn.innerText = '+'; addBtn.onclick = () => document.getElementById('bgAssetUpload').click(); container.appendChild(addBtn);
+            
+            // Defaults with visual preview
+            DEFAULT_BGS.forEach(bg => { 
+                const btn = document.createElement('div'); 
+                btn.className = 'bg-btn'; 
+                btn.innerText = bg.name; 
+                // Inline styles for preview
+                btn.style.cssText = bg.style;
+                btn.onclick = () => setBoardBg(bg.type); 
+                container.appendChild(btn); 
             });
+            
+            // User Uploads (Safety check)
+            if(Array.isArray(userBackgrounds)) {
+                userBackgrounds.forEach(bg => { const btn = document.createElement('div'); btn.className = 'bg-preview-btn'; btn.style.backgroundImage = `url('${bg.src}')`; btn.onclick = () => setBoardBg('custom', bg.src); container.appendChild(btn); });
+            }
         }
         function handleBgAssetUpload(input) {
             if(input.files && input.files[0]) {
@@ -772,7 +793,7 @@
         function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
 
         /* --- HELPERS --- */
-        function openBgModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block';}
+        function openBgModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block'; renderBgModalItems();}
         function openDrawModal(id){
             if(isLocked)return; 
             currentActiveWeek=id;
@@ -787,13 +808,21 @@
         }
         function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
         function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
-        function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
+        
+        // --- GLOBAL CONFIRM FUNCTION ---
+        function showConfirm(msg, cb) { 
+            document.getElementById('confirmMsg').innerText=msg; 
+            confirmCallback=cb; 
+            document.getElementById('confirmModal').style.display='flex'; 
+            document.getElementById('overlay').style.display='block'; 
+        }
         function closeConfirm(res) { 
             document.getElementById('confirmModal').style.display='none'; 
             document.getElementById('overlay').style.display='none'; 
             if(res && confirmCallback) confirmCallback(); 
             confirmCallback=null; 
         }
+        
         function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
         function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
         function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
