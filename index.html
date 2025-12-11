@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>mood board</title>
+    <title>Our Mood Board ❤️</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Library for Exporting to PNG -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
     <!-- FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-<style>
+    <style>
         @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap');
 
         :root { --bg-wall: #8d6e63; --c-accent: #FFD1DC; --c-dark: #5d4037; }
@@ -30,12 +32,14 @@
         /* --- NAVIGATION --- */
         .hamburger { position: fixed; top: 10px; left: 10px; background: white; padding: 8px 12px; font-size: 1.5rem; border-radius: 10px; cursor: pointer; z-index: 2000; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border: 2px solid var(--c-dark); }
         .sidebar { height: 100%; width: 0; position: fixed; z-index: 2001; top: 0; left: 0; background-color: #fff3e0; overflow-x: hidden; transition: 0.3s; padding-top: 60px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
-        .sidebar a { padding: 15px 30px; text-decoration: none; font-size: 1.5rem; color: var(--c-dark); display: block; }
+        .sidebar a { padding: 10px 30px; text-decoration: none; font-size: 1.4rem; color: var(--c-dark); display: block; cursor: pointer; }
+        .sidebar a:hover { background: #ffe0b2; }
         .sidebar-section { padding: 20px 30px; border-top: 1px dashed #ccc; margin-top: 10px; }
-        .sidebar-title { font-weight: bold; margin-bottom: 10px; color: var(--c-dark); }
+        .sidebar-title { font-weight: bold; margin-bottom: 10px; color: var(--c-dark); font-size: 1.2rem; }
         .bg-option { display: inline-block; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #555; margin-right: 10px; cursor: pointer; }
         .bg-cork { background: #bcaaa4; } .bg-grid { background: white; background-image: linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px); background-size: 10px 10px; } .bg-pink { background: #f8bbd0; } .bg-clouds { background: #e3f2fd; }
-        .sidebar-btn { margin: 20px 30px; padding: 10px; background: #90a4ae; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 1.2rem; cursor: pointer; }
+        .sidebar-btn { margin: 10px 30px; padding: 10px; background: #90a4ae; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 1.1rem; cursor: pointer; }
+        .create-board-btn { background: var(--c-accent); color: #5d4037; border: 2px dashed #5d4037; }
         .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; }
 
         /* --- LOCK BUTTON --- */
@@ -44,21 +48,13 @@
         .lock-fab.locked { background: #ffcdd2; color: #c62828; border-color: #c62828; }
         .lock-fab.unlocked { background: #c8e6c9; color: #2e7d32; border-color: #2e7d32; }
 
-        /* --- LAYOUT --- */
-        #weeks-container { padding-bottom: 100px; }
+        /* --- VIEW CONTAINERS --- */
+        #weeks-container { padding-bottom: 100px; display: block; }
+        #pinterest-container { padding-bottom: 100px; display: none; margin-top: 20px; }
+
+        /* --- WEEK LAYOUT --- */
         .week-section { margin-bottom: 50px; }
-        
-        /* Flexbox Header - Wraps nicely on mobile */
-        .week-header { 
-            padding: 0 15px; 
-            margin-bottom: 5px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            flex-wrap: wrap; /* Fixes buttons getting cut off */
-            gap: 10px;
-        }
-        
+        .week-header { padding: 0 15px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; white-space: nowrap; }
         .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
         
@@ -68,92 +64,26 @@
         
         .action-btn { background: white; border: 2px solid var(--c-dark); border-radius: 15px; padding: 5px 10px; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.2); transition: 0.1s; font-size: 0.9rem; }
         .action-btn:active { transform: translateY(2px); box-shadow: none; }
-        .btn-note { background: #fff9c4; } .btn-draw { background: #b3e5fc; } .btn-bg { background: #e0e0e0; }
+        .btn-note { background: #fff9c4; } .btn-draw { background: #b3e5fc; } .btn-bg { background: #e0e0e0; } .btn-export { background: #e1bee7; }
 
-        /* --- GOALS STRIP (The Fix) --- */
-        .goals-strip { 
-            width: 95%; 
-            margin: 0 auto; 
-            background: #fff; 
-            
-            /* Clean Lines Pattern */
-            background-image: linear-gradient(#cfd8dc 1px, transparent 1px); 
-            background-size: 100% 30px; /* Line height */
-            background-position: 0 10px; /* Align lines */
-            
-            min-height: 70px; /* Height of roughly 2 lines */
-            border-radius: 5px 5px 0 0; 
-            position: relative; 
-            padding: 10px 20px; 
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.2); 
-            z-index: 5;
-        }
-
-        /* Spiral Holes */
-        .goals-strip::before { 
-            content: ''; 
-            position: absolute; 
-            top: -15px; 
-            left: 0; 
-            width: 100%; 
-            height: 25px; 
-            background: radial-gradient(circle, #333 30%, transparent 35%); 
-            background-size: 35px 35px; /* Adjust spacing of holes */
-            background-position: 10px top;
-            z-index: -1; 
-        }
-        
-        /* Header Container */
-        .goal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            height: 30px; /* Sits on one line */
-            margin-bottom: 5px;
-        }
-        
-        .goal-header span {
-            font-weight: bold; 
-            color: #ff7043; 
-            text-decoration: underline;
-            font-size: 1.1rem;
-        }
-        
-        .goal-add-btn { 
-            background: var(--c-accent); 
-            border: 1px solid #aaa; 
-            border-radius: 10px; 
-            padding: 2px 10px; 
-            font-family: inherit; 
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        /* Horizontal List Layout */
-        .goal-list { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            display: flex; 
-            flex-wrap: wrap; /* Allows items to flow to next line */
-            gap: 15px; 
-        }
-        
-        .goal-list li { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-            font-size: 1.1rem; 
-            background: rgba(255,255,255,0.8); 
-            padding: 0 5px; 
-            border-radius: 5px;
-            height: 30px; /* Align with background lines */
-        }
-        
+        /* --- GOALS STRIP --- */
+        .goals-strip { width: 95%; margin: 0 auto; background: #fff; background-image: linear-gradient(#cfd8dc 1px, transparent 1px); background-size: 100% 30px; background-position: 0 10px; min-height: 70px; border-radius: 5px 5px 0 0; position: relative; padding: 10px 20px; box-shadow: 0 -2px 5px rgba(0,0,0,0.2); z-index: 5; }
+        .goals-strip::before { content: ''; position: absolute; top: -15px; left: 0; width: 100%; height: 25px; background: radial-gradient(circle, #333 30%, transparent 35%); background-size: 35px 35px; background-position: 10px top; z-index: -1; }
+        .goal-header { display: flex; justify-content: space-between; align-items: center; height: 30px; margin-bottom: 5px; }
+        .goal-header span { font-weight: bold; color: #ff7043; text-decoration: underline; font-size: 1.1rem; }
+        .goal-add-btn { background: var(--c-accent); border: 1px solid #aaa; border-radius: 10px; padding: 2px 10px; font-family: inherit; font-size: 0.9rem; cursor: pointer; }
+        .goal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 15px; }
+        .goal-list li { display: flex; align-items: center; gap: 5px; font-size: 1.1rem; background: rgba(255,255,255,0.8); padding: 0 5px; border-radius: 5px; height: 30px; }
         .goal-list li input { accent-color: #ff7043; }
 
         /* BOARD */
-        .board-container { width: 100%; height: 55vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
+        .board-container { width: 100%; height: 60vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
+        
+        /* PINTEREST MODE STYLES */
+        .pinterest-header { text-align: center; color: white; margin-bottom: 10px; }
+        .pinterest-title { font-size: 2.5rem; text-shadow: 2px 2px #5d4037; margin: 0; }
+        .pinterest-board { height: 75vh; width: 100%; margin-top: 10px; } /* Taller for pinboard */
+
         .board-bg-cork { background-color: #bcaaa4 !important; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png') !important; background-size: auto !important; }
         .board-bg-grid { background-color: #fdfdfd !important; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px) !important; background-size: 30px 30px !important; }
         .board-bg-pink { background-color: #f8bbd0 !important; background-image: radial-gradient(#f48fb1 2px, transparent 2px) !important; background-size: 20px 20px !important; }
@@ -246,6 +176,14 @@
         <a href="javascript:void(0)" class="close-btn" onclick="toggleNav()">×</a>
         <div style="text-align:center; font-size:2rem; margin-bottom:20px;">📅 Weeks</div>
         <div id="sidebar-weeks-list"></div>
+        
+        <!-- PINTEREST BOARDS SECTION -->
+        <div class="sidebar-section">
+            <div class="sidebar-title">📌 Pinboards</div>
+            <button class="sidebar-btn create-board-btn" onclick="createNewBoard()">+ Create Board</button>
+            <div id="sidebar-boards-list"></div>
+        </div>
+
         <div class="sidebar-section">
             <div class="sidebar-title" onclick="openStatsModal()" style="cursor:pointer; background:#e1f5fe; padding:10px; border-radius:10px; text-align:center;">📊 View Mood Stats</div>
         </div>
@@ -265,7 +203,24 @@
         <img id="mainTitleImage" class="main-header-img" alt="Mood Board">
     </div>
 
+    <!-- WEEK VIEW -->
     <div id="weeks-container"></div>
+
+    <!-- PINTEREST BOARD VIEW -->
+    <div id="pinterest-container">
+        <div class="pinterest-header">
+            <h2 id="pinboard-title" class="pinterest-title">My Board</h2>
+            <div class="board-actions" style="justify-content: center; margin-top:10px;">
+                <button class="action-btn btn-note" onclick="openNoteEditor(activeBoardId)">📝 Sticky</button>
+                <button class="action-btn btn-draw" onclick="openDrawModal(activeBoardId)">🎨 Paint</button>
+                <button class="action-btn btn-bg" onclick="openBgModal(activeBoardId)">🖼️ BG</button>
+                <button class="action-btn btn-export" onclick="exportBoardAsPNG()">📸 Save Image</button>
+            </div>
+        </div>
+        <div class="board-container pinterest-board" id="active-board-container">
+            <div class="board-inner" id="active-board-inner" onclick="deselectAll(event)"></div>
+        </div>
+    </div>
 
     <div id="overlay" onclick="closeAllModals()"></div>
 
@@ -352,12 +307,7 @@
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     <div id="bgModal" class="modal"><div class="modal-draw-content" style="text-align:center;"><h3>Choose Background 🖼️</h3><div class="bg-grid-container"><div class="bg-btn bg-cork" onclick="setBoardBg('cork')">Cork</div><div class="bg-btn bg-grid" onclick="setBoardBg('grid')">Grid</div><div class="bg-btn bg-pink" onclick="setBoardBg('pink')">Pink</div><div class="bg-btn bg-clouds" onclick="setBoardBg('clouds')">Clouds</div><input type="file" id="bgFileInput" accept="image/*" style="display:none;" onchange="handleBgUpload(this)"><div class="bg-btn bg-upload-btn" onclick="document.getElementById('bgFileInput').click()">⬆️ Upload Photo</div></div><br><button class="cancel-btn" onclick="closeAllModals()">Close</button></div></div>
 
-<script>
-        /* 
-           =========================================================
-           1. CONFIGURATION
-           =========================================================
-        */
+    <script>
         const TITLE_IMAGE_SRC = "https://fontmeme.com/permalink/231211/a8596068ce879003632970959067963d.png";
         
         const CUSTOM_MOODS = [
@@ -380,12 +330,16 @@
         };
 
         /* --- VARIABLES --- */
-        let db=null; let useFirebase=false; let items=[]; let goals={}; let boardBgs={}; 
+        let db=null; let useFirebase=false; 
+        let items=[]; let goals={}; let boardBgs={}; let pinterestBoards=[];
+        
         let pickedColor={h:0,s:100,v:0,r:0,g:0,b:0,hex:"#000000"}; 
         let editingItemId=null; let currentActiveWeek=''; let currentEditorImage=null; let confirmCallback=null;
         let selectedMoodSrc = null;
         let activeWeeks = []; 
         let isLocked = true;
+        let currentMode = 'weeks'; // 'weeks' or 'pinterest'
+        let activeBoardId = null;
 
         /* --- INITIALIZATION --- */
         window.onload = function() {
@@ -407,7 +361,7 @@
             document.getElementById('drawSize').addEventListener('input',(e)=>document.getElementById('sizeVal').innerText=e.target.value);
         };
 
-        /* --- LOCK & SETTINGS --- */
+        /* --- NAVIGATION & VIEW SWITCHING --- */
         function toggleLockMode() { isLocked = !isLocked; updateLockUI(); }
 
         function updateLockUI() {
@@ -415,22 +369,119 @@
             const btn = document.getElementById('lockBtn');
             if(isLocked) {
                 body.classList.add('is-locked');
-                btn.classList.add('locked');
-                btn.classList.remove('unlocked');
-                btn.innerText = "🔒";
+                btn.classList.add('locked'); btn.classList.remove('unlocked'); btn.innerText = "🔒";
                 document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
             } else {
                 body.classList.remove('is-locked');
-                btn.classList.remove('locked');
-                btn.classList.add('unlocked');
-                btn.innerText = "🔓";
+                btn.classList.remove('locked'); btn.classList.add('unlocked'); btn.innerText = "🔓";
             }
+        }
+
+        function showWeeks() {
+            currentMode = 'weeks';
+            activeBoardId = null;
+            document.getElementById('weeks-container').style.display = 'block';
+            document.getElementById('pinterest-container').style.display = 'none';
+            toggleNav();
+        }
+
+        function showPinterestBoard(boardId) {
+            currentMode = 'pinterest';
+            activeBoardId = boardId;
+            
+            const board = pinterestBoards.find(b => b.id === boardId);
+            document.getElementById('pinboard-title').innerText = board ? board.name : "My Board";
+            
+            document.getElementById('weeks-container').style.display = 'none';
+            document.getElementById('pinterest-container').style.display = 'block';
+            
+            // Render items for this board
+            renderActivePinterestBoard();
+            // Apply BG
+            if(boardBgs[boardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[boardId]);
+            else applyBgToContainer(document.getElementById('active-board-container'), {type:'cork'});
+            
+            toggleNav();
+        }
+
+        function createNewBoard() {
+            const name = prompt("Enter a name for your new Pinboard:");
+            if(name) {
+                const newBoard = { id: 'pin-' + Date.now(), name: name };
+                if(!pinterestBoards) pinterestBoards = [];
+                pinterestBoards.push(newBoard);
+                saveData('boards');
+                renderBoardsList();
+                showPinterestBoard(newBoard.id);
+            }
+        }
+
+        function renderBoardsList() {
+            const list = document.getElementById('sidebar-boards-list');
+            list.innerHTML = '';
+            if(pinterestBoards) {
+                pinterestBoards.forEach(board => {
+                    const a = document.createElement('a');
+                    a.innerText = "📌 " + board.name;
+                    a.onclick = () => showPinterestBoard(board.id);
+                    list.appendChild(a);
+                });
+            }
+        }
+
+        function exportBoardAsPNG() {
+            // Temporarily hide handles and lock button for clean screenshot
+            document.body.classList.add('is-locked'); 
+            const boardElement = document.getElementById('active-board-container');
+            
+            html2canvas(boardElement, {
+                useCORS: true, // Important for external images
+                scale: 2 // High resolution
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = document.getElementById('pinboard-title').innerText + '.png';
+                link.href = canvas.toDataURL();
+                link.click();
+                // Restore state
+                if(!isLocked) document.body.classList.remove('is-locked');
+            });
         }
 
         function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; toggleNav(); }
         function askHardReset() { const code = prompt("To delete EVERYTHING, type the word 'DELETE' below:"); if (code === "DELETE") { localStorage.clear(); location.reload(); } else if (code !== null) { alert("Incorrect code. Nothing was deleted."); } }
 
-        /* --- DATE & WEEKS LOGIC --- */
+        /* --- DATA HANDLING --- */
+        function loadFromLocal(){ 
+            if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); 
+            if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); 
+            if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); 
+            if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards'));
+            renderApp(); 
+        }
+        
+        function loadFromFirebase(){ 
+            db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();}); 
+            db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); 
+            db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); 
+            db.collection("data").doc("boards").onSnapshot((d)=>{if(d.exists){pinterestBoards=d.data().list || []; renderBoardsList();}});
+        }
+        
+        function saveData(t){ 
+            if(!useFirebase){ 
+                if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); 
+                if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); 
+                if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); 
+                if(t==='boards')localStorage.setItem('moodboard_pinboards',JSON.stringify(pinterestBoards));
+                return; 
+            } 
+            if(t==='goals')db.collection("data").doc("goals").set(goals); 
+            if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); 
+            if(t==='boards')db.collection("data").doc("boards").set({list: pinterestBoards});
+        }
+        
+        function renderApp(){ renderAllItems(); renderGoals(); applyAllBoardBgs(); renderBoardsList(); }
+
+        /* --- WEEKS LOGIC --- */
         function initWeeks() {
             const today = new Date();
             const currentWeekId = getWeekId(today);
@@ -445,10 +496,10 @@
             
             activeWeeks.forEach(id => {
                 const datesLabel = getWeekLabel(id);
-                // Sidebar Link
-                const link = document.createElement('a'); link.href = "#" + id; link.innerText = datesLabel; link.onclick = toggleNav; sidebarList.appendChild(link);
+                const link = document.createElement('a'); link.href = "#"; link.innerText = datesLabel; 
+                link.onclick = () => { showWeeks(); window.location.hash = id; }; // Switch to week view
+                sidebarList.appendChild(link);
                 
-                // Main Section HTML
                 const section = document.createElement('div'); section.className = 'week-section'; section.id = id;
                 section.innerHTML = `
                     <div class="week-header">
@@ -459,90 +510,23 @@
                             <button class="action-btn btn-bg" onclick="openBgModal('${id}')">🖼️ BG</button>
                         </div>
                     </div>
-                    
-                    <!-- NOTEBOOK GOALS AREA -->
                     <div class="goals-strip">
-                        <div class="goal-header">
-                            <span>Weekly Goals</span>
-                            <button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button>
-                        </div>
+                        <div class="goal-header"><span>Weekly Goals</span><button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button></div>
                         <ul class="goal-list" id="goals-${id}"></ul>
                     </div>
-
                     <div class="board-container" id="${id}-container">
                         <div class="board-inner" id="board-${id}" onclick="deselectAll(event)"></div>
-                    </div>
-                `;
+                    </div>`;
                 container.appendChild(section);
             });
         }
         function getWeekId(dateObj) { const d = new Date(dateObj); const day = d.getDay(); const diff = d.getDate() - day; const sunday = new Date(d.setDate(diff)); return "week-" + sunday.toISOString().split('T')[0]; }
         function getWeekLabel(weekId) { const dateStr = weekId.replace('week-', ''); const start = new Date(dateStr); const end = new Date(start); end.setDate(start.getDate() + 6); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return `${monthNames[start.getMonth()]} ${start.getDate()} - ${end.getDate()}`; }
 
-        /* --- FIREBASE & DATA LOAD/SAVE --- */
-        function loadFromLocal(){ if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); renderApp(); }
-        
-        function loadFromFirebase(){ 
-            db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();if(document.getElementById('statsModal').style.display==='flex')calculateStats();}); 
-            db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); 
-            db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); 
-        }
-        
-        function saveData(t){ 
-            if(!useFirebase){ 
-                if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); 
-                if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); 
-                if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); 
-                return; 
-            } 
-            if(t==='goals')db.collection("data").doc("goals").set(goals); 
-            if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); 
-        }
-        
-        function renderApp(){ renderAllItems(); renderGoals(); applyAllBoardBgs(); }
-
-        /* --- 📝 GOALS LOGIC (THIS WAS MISSING!) --- */
-        function addGoal(id){
-            if(isLocked) return; 
-            const t = prompt("New Goal:");
-            if(t){
-                if(!goals[id]) goals[id]=[];
-                goals[id].push({text:t, done:false});
-                saveData('goals');
-                renderGoals();
-            }
-        }
-
-        function toggleGoal(id, idx){
-            if(isLocked) return; 
-            const d = !goals[id][idx].done;
-            goals[id][idx].done = d;
-            saveData('goals');
-            renderGoals();
-            if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}});
-        }
-
-        function deleteGoal(id, idx){
-            if(isLocked) return; 
-            showConfirm("Delete this goal?",()=>{
-                goals[id].splice(idx,1);
-                saveData('goals');
-                renderGoals();
-            });
-        }
-
-        function renderGoals(){
-            for(const[id,list]of Object.entries(goals)){
-                const ul=document.getElementById('goals-'+id);
-                if(!ul) continue;
-                ul.innerHTML='';
-                list.forEach((g,i)=>{
-                    const li=document.createElement('li');
-                    li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`;
-                    ul.appendChild(li);
-                });
-            }
-        }
+        function addGoal(id){ if(isLocked) return; const t = prompt("New Goal:"); if(t){ if(!goals[id]) goals[id]=[]; goals[id].push({text:t, done:false}); saveData('goals'); renderGoals(); } }
+        function toggleGoal(id, idx){ if(isLocked) return; const d = !goals[id][idx].done; goals[id][idx].done = d; saveData('goals'); renderGoals(); if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
+        function deleteGoal(id, idx){ if(isLocked) return; showConfirm("Delete this goal?",()=>{ goals[id].splice(idx,1); saveData('goals'); renderGoals(); }); }
+        function renderGoals(){ for(const[id,list]of Object.entries(goals)){ const ul=document.getElementById('goals-'+id); if(!ul) continue; ul.innerHTML=''; list.forEach((g,i)=>{ const li=document.createElement('li'); li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`; ul.appendChild(li); }); } }
 
         /* --- NOTE EDITOR --- */
         function initMoodSelector(){ const container = document.getElementById('moodGrid'); container.innerHTML = ''; CUSTOM_MOODS.forEach(opt => { const wrapper = document.createElement('div'); wrapper.className = 'mood-option-container'; wrapper.onclick = () => selectMood(opt.src, wrapper.querySelector('img')); const img = document.createElement('img'); img.src = opt.src; img.title = opt.name; img.className = 'mood-btn'; const span = document.createElement('span'); span.className = 'mood-label-small'; span.innerText = opt.name; wrapper.appendChild(img); wrapper.appendChild(span); container.appendChild(wrapper); }); }
@@ -550,22 +534,36 @@
 
         function openNoteEditor(weekIdOrItem) {
             if(isLocked) return;
-            const modal = document.getElementById('noteEditorModal'); const txt = document.getElementById('editorText'); const preview = document.getElementById('editorImgPreview'); const label = document.getElementById('photoLabel');
-            currentEditorImage = null; selectedMoodSrc = null; preview.style.display = 'none'; label.style.display = 'block'; document.getElementById('editorFileInput').value = '';
-            document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
-            if (typeof weekIdOrItem === 'string') { currentActiveWeek = weekIdOrItem; editingItemId = null; txt.value = ""; } 
-            else { const item = weekIdOrItem; editingItemId = item.id; currentActiveWeek = item.weekId; txt.value = item.text || ""; 
+            // Determine active context
+            if (typeof weekIdOrItem === 'string') { 
+                currentActiveWeek = weekIdOrItem; // Can be a weekId OR a boardId
+                editingItemId = null; 
+                document.getElementById('editorText').value = ""; 
+            } else { 
+                const item = weekIdOrItem; 
+                editingItemId = item.id; 
+                currentActiveWeek = item.weekId; // Item knows where it belongs
+                document.getElementById('editorText').value = item.text || ""; 
                 if(item.moodImg) { selectedMoodSrc = item.moodImg; const match = Array.from(document.querySelectorAll('.mood-btn')).find(img => img.src === item.moodImg); if(match) match.classList.add('selected'); }
-                if(item.imgUrl) { currentEditorImage = item.imgUrl; preview.src = item.imgUrl; preview.style.display = 'block'; label.style.display = 'none'; } 
+                if(item.imgUrl) { currentEditorImage = item.imgUrl; document.getElementById('editorImgPreview').src = item.imgUrl; document.getElementById('editorImgPreview').style.display = 'block'; document.getElementById('photoLabel').style.display = 'none'; } 
             }
-            modal.style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; txt.focus();
+            
+            // Reset Editor UI
+            if(!editingItemId) {
+                currentEditorImage = null; selectedMoodSrc = null; 
+                document.getElementById('editorImgPreview').style.display = 'none'; 
+                document.getElementById('photoLabel').style.display = 'block'; 
+                document.getElementById('editorFileInput').value = '';
+                document.querySelectorAll('.mood-btn').forEach(el => el.classList.remove('selected'));
+            }
+
+            document.getElementById('noteEditorModal').style.display = 'flex'; document.getElementById('overlay').style.display = 'block'; document.getElementById('editorText').focus();
         }
 
         function saveFromEditor(type) {
             const text = document.getElementById('editorText').value; const hasBorder = document.getElementById('stickerBorderCheck').checked;
             let moodName = "Unknown"; const moodObj = CUSTOM_MOODS.find(m => m.src === selectedMoodSrc); if(moodObj) moodName = moodObj.name;
-            const baseW = type === 'note' ? 220 : 200;
-            const baseH = type === 'note' ? 260 : 200;
+            const baseW = type === 'note' ? 220 : 200; const baseH = type === 'note' ? 260 : 200;
             const newItem = { id: editingItemId || Date.now(), type, text, moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder };
             if (editingItemId) { const existing = items.find(i => i.id === editingItemId); if(existing) { newItem.x = existing.x; newItem.y = existing.y; newItem.w = existing.w; newItem.h = existing.h; newItem.rot = existing.rot; const idx = items.indexOf(existing); items[idx] = newItem; } } else { items.push(newItem); }
             if(useFirebase) db.collection("items").doc(String(newItem.id)).set(newItem); else { saveData('items'); renderAllItems(); }
@@ -581,16 +579,26 @@
 
         /* --- ITEMS & RENDERING --- */
         function createDOMItem(item) {
-            const board = document.getElementById('board-' + item.weekId); if(!board) return;
+            let containerId;
+            // Determine where to render
+            if(item.weekId.startsWith('pin-')) {
+                // It's a Pinterest Board Item
+                if(currentMode !== 'pinterest' || item.weekId !== activeBoardId) return; // Only render if looking at correct board
+                containerId = 'active-board-inner';
+            } else {
+                // It's a Week Item
+                if(currentMode !== 'weeks') return;
+                containerId = 'board-' + item.weekId;
+            }
+
+            const board = document.getElementById(containerId); if(!board) return;
             const div = document.createElement('div'); div.classList.add('draggable-item');
             div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; 
             div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
             div.style.transform = `rotate(${item.rot}deg)`; div.style.zIndex = 1;
 
-            const baseW = item.type === 'note' ? 220 : 200;
-            const baseH = item.type === 'note' ? 260 : 200;
-            const scaleX = item.w / baseW || 1;
-            const scaleY = item.h / baseH || 1;
+            const baseW = item.type === 'note' ? 220 : 200; const baseH = item.type === 'note' ? 260 : 200;
+            const scaleX = item.w / baseW || 1; const scaleY = item.h / baseH || 1;
 
             let handles = `<div class="control-handle resize-handle">↘</div><div class="control-handle delete-handle">✖</div><div class="control-handle edit-handle">✎</div><div class="control-handle rotate-handle"></div>`;
             
@@ -604,7 +612,6 @@
             }
 
             const scaledWrapper = `<div class="scalable-content" style="width:${baseW}px; height:${baseH}px; transform: scale(${scaleX}, ${scaleY});">${innerContent}</div>`;
-            
             div.innerHTML = handles + scaledWrapper;
             setupItemEvents(div, item, baseW, baseH);
             board.appendChild(div);
@@ -716,7 +723,19 @@
         }
 
         function deleteItem(id){if(isLocked)return; showConfirm("Delete this item?",()=>{if(useFirebase)db.collection("items").doc(String(id)).delete();else{items=items.filter(i=>i.id!==id);saveData('items');renderAllItems();}});}
-        function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
+        
+        function renderAllItems(){
+            document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');
+            items.forEach(createDOMItem);
+        }
+        
+        function renderActivePinterestBoard() {
+            if(currentMode !== 'pinterest') return;
+            const container = document.getElementById('active-board-inner');
+            container.innerHTML = '';
+            const boardItems = items.filter(i => i.weekId === activeBoardId);
+            boardItems.forEach(createDOMItem);
+        }
 
         /* --- HELPERS --- */
         function openBgModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block';}
@@ -724,16 +743,26 @@
         function closeAllModals(){if(document.getElementById('confirmModal').style.display==='flex')return; document.querySelectorAll('.modal').forEach(m=>m.style.display='none');document.getElementById('overlay').style.display='none';}
         function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
         function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
+        
         function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
-        function closeConfirm(res) { document.getElementById('confirmModal').style.display='none'; if(res) document.getElementById('overlay').style.display='none'; else if(!document.getElementById('noteEditorModal').style.display && !document.getElementById('bgModal').style.display && !document.getElementById('settingsModal').style.display) document.getElementById('overlay').style.display='none'; if(res && confirmCallback) confirmCallback(); confirmCallback=null; }
+        function closeConfirm(res) { 
+            document.getElementById('confirmModal').style.display='none'; 
+            document.getElementById('overlay').style.display='none'; // Force hide overlay
+            if(res && confirmCallback) confirmCallback(); 
+            confirmCallback=null; 
+        }
+        
         function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
         function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
         function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
         function toggleNav(){const sb=document.getElementById("mySidebar");sb.style.width=sb.style.width==="250px"?"0":"250px";}
-        function setBoardBg(t,u=null){if(u)boardBgs[currentActiveWeek]={type:'custom',url:u};else boardBgs[currentActiveWeek]={type:t,url:null};applyBgToContainer(document.getElementById(currentActiveWeek+"-container"),boardBgs[currentActiveWeek]);saveData('bgs');closeAllModals();}
+        function setBoardBg(t,u=null){if(u)boardBgs[currentActiveWeek]={type:'custom',url:u};else boardBgs[currentActiveWeek]={type:t,url:null};applyBgToContainer(document.getElementById(currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container"),boardBgs[currentActiveWeek]);saveData('bgs');closeAllModals();}
         function handleBgUpload(i){if(i.files[0]){const r=new FileReader();r.onload=(e)=>setBoardBg('custom',e.target.result);r.readAsDataURL(i.files[0]);}}
-        function applyBgToContainer(c,d){if(!d)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
-        function applyAllBoardBgs(){activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);});}
+        function applyBgToContainer(c,d){if(!d || !c)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
+        function applyAllBoardBgs(){
+            activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);});
+            if(activeBoardId && boardBgs[activeBoardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[activeBoardId]);
+        }
 
         /* --- DRAW CANVAS --- */
         const canvas=document.getElementById('drawCanvas');const ctx=canvas.getContext('2d');let currentBrush='pen';let isDrawing=false;
@@ -749,6 +778,3 @@
         function updateColorUI(){document.getElementById('svSquare').style.backgroundColor=`hsl(${pickedColor.h},100%,50%)`;const rgb=hsvToRgb(pickedColor.h/360,pickedColor.s/100,pickedColor.v/100);pickedColor.r=rgb.r;pickedColor.g=rgb.g;pickedColor.b=rgb.b;pickedColor.hex=`rgb(${rgb.r},${rgb.g},${rgb.b})`;const svInd=document.getElementById('svInd');svInd.style.left=pickedColor.s+'%';svInd.style.top=(100-pickedColor.v)+'%';document.getElementById('rSlider').value=rgb.r;document.getElementById('gSlider').value=rgb.g;document.getElementById('bSlider').value=rgb.b;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
         function updateColorFromSliders(){const r=parseInt(document.getElementById('rSlider').value);const g=parseInt(document.getElementById('gSlider').value);const b=parseInt(document.getElementById('bSlider').value);pickedColor.hex=`rgb(${r},${g},${b})`;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
     </script>
-</body>
-</html>
-
