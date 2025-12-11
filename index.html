@@ -42,8 +42,6 @@
         .week-section { margin-bottom: 50px; }
         .week-header { padding: 0 15px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .week-title { color: white; font-size: 1.5rem; text-shadow: 1px 1px #333; white-space: nowrap; }
-        
-        /* ACTIONS */
         .board-actions { display: flex; gap: 8px; transition: opacity 0.3s; }
         body.is-locked .board-actions, body.is-locked .goal-add-btn, body.is-locked .control-handle { display: none !important; }
         body.is-locked .draggable-item { pointer-events: none; }
@@ -81,12 +79,9 @@
         .tape { width: 100px; height: 28px; background: rgba(100, 221, 231, 0.6); position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-1deg); background-size: cover; background-position: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .note-text-area { flex-grow: 1; word-wrap: break-word; line-height: 1.2; }
         .note-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; }
-        
-        /* FIX: Ensure Mood Icons in Note are small */
         .mood-tag { display: flex; align-items: center; gap: 5px; opacity: 0.9; }
         .mood-tag img { width: 25px; height: 25px; object-fit: contain; }
         .mood-tag span { font-size: 1.2rem; color: #ff8a80; font-weight: bold; }
-        
         .note-polaroid { width: 90px; height: 90px; background: white; border: 4px solid white; box-shadow: 1px 1px 4px rgba(0,0,0,0.2); transform: rotate(3deg); }
         .note-polaroid img { width: 100%; height: 100%; object-fit: cover; }
         .sticker-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
@@ -111,30 +106,9 @@
         
         .editor-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; min-height: 80px; }
         
-        /* --- FIXED MOOD GRID IN EDITOR --- */
-        .mood-grid { 
-            display: flex; 
-            gap: 5px; 
-            flex-wrap: wrap; 
-            width: 100%; 
-            max-width: 150px; /* Constrain width */
-        }
-        .mood-option-container { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            cursor: pointer; 
-        }
-        .mood-btn { 
-            width: 30px !important; 
-            height: 30px !important; 
-            border: 2px solid transparent; 
-            border-radius: 50%; 
-            object-fit: contain; 
-            transition: transform 0.1s; 
-            padding: 2px; 
-            background: #fff; 
-        }
+        .mood-grid { display: flex; gap: 5px; flex-wrap: wrap; width: 100%; max-width: 150px; }
+        .mood-option-container { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .mood-btn { width: 30px !important; height: 30px !important; border: 2px solid transparent; border-radius: 50%; object-fit: contain; transition: transform 0.1s; padding: 2px; background: #fff; }
         .mood-btn.selected { border-color: var(--c-dark); background: #b3e5fc; transform: scale(1.1); }
         .mood-label-small { font-size: 0.7rem; color: #777; margin-top: -2px; display:none; }
 
@@ -186,8 +160,10 @@
         input[type="range"].color-slider { flex-grow: 1; height: 5px; -webkit-appearance: none; border-radius: 5px; }
         .preview-box { width: 40px; height: 40px; border: 2px solid white; border-radius: 5px; background: #000; }
         .bg-grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        /* Background Options Buttons */
         .bg-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; color: #333; }
-        .bg-upload-btn { grid-column: span 2; background: #e0e0e0; border: 2px dashed #888; color: #555; }
+        .bg-preview-btn { height: 60px; border: 2px solid #555; border-radius: 10px; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
+        .bg-add-btn { height: 60px; border: 2px dashed #888; background: #eee; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: #555; }
         .stats-box { background: white; border: 3px solid var(--c-dark); border-radius: 20px; padding: 25px; width: 320px; font-size: 1.2rem; }
         .stat-row { display: flex; align-items: center; margin-bottom: 10px; }
         .stat-label { width: 100px; }
@@ -338,7 +314,19 @@
     <div id="settingsModal" class="modal"><div class="confirm-box" style="width:340px;"><h3>⚙️ Settings</h3><p style="color:#777; font-size:1rem;">Danger Zone</p><button onclick="askHardReset()" style="width:100%; padding:15px; background:#ef5350; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">⚠️ DELETE EVERYTHING</button><br><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
     <div id="confirmModal" class="modal"><div class="confirm-box"><div class="confirm-msg" id="confirmMsg">Are you sure?</div><div class="confirm-actions"><button class="cancel-btn" onclick="closeConfirm(false)">No</button><button class="save-btn" style="background:#ef5350; color:white;" onclick="closeConfirm(true)">Yes</button></div></div></div>
     <div id="statsModal" class="modal"><div class="stats-box"><h3 style="text-align:center; margin-top:0;">Mood Statistics 📈</h3><div id="statsContent"></div><br><button class="cancel-btn" style="width:100%" onclick="closeAllModals()">Close</button></div></div>
-    <div id="bgModal" class="modal"><div class="modal-draw-content" style="text-align:center;"><h3>Choose Background 🖼️</h3><div class="bg-grid-container"><div class="bg-btn bg-cork" onclick="setBoardBg('cork')">Cork</div><div class="bg-btn bg-grid" onclick="setBoardBg('grid')">Grid</div><div class="bg-btn bg-pink" onclick="setBoardBg('pink')">Pink</div><div class="bg-btn bg-clouds" onclick="setBoardBg('clouds')">Clouds</div><input type="file" id="bgFileInput" accept="image/*" style="display:none;" onchange="handleBgUpload(this)"><div class="bg-btn bg-upload-btn" onclick="document.getElementById('bgFileInput').click()">⬆️ Upload Photo</div></div><br><button class="cancel-btn" onclick="closeAllModals()">Close</button></div></div>
+    
+    <!-- BACKGROUND MODAL (UPDATED) -->
+    <div id="bgModal" class="modal">
+        <div class="modal-draw-content" style="text-align:center;">
+            <h3>Choose Background 🖼️</h3>
+            <div id="bg-list-container" class="bg-grid-container">
+                <!-- JS will inject options here -->
+            </div>
+            <input type="file" id="bgAssetUpload" accept="image/*" style="display:none;" onchange="handleBgAssetUpload(this)">
+            <br>
+            <button class="cancel-btn" onclick="closeAllModals()">Close</button>
+        </div>
+    </div>
 
     <script>
         const TITLE_IMAGE_SRC = "https://fontmeme.com/permalink/231211/a8596068ce879003632970959067963d.png";
@@ -353,9 +341,9 @@
             { name: "yap", src: "./yap.png" }
         ];
 
-        /* --- DEFAULT PRESETS (Tape, Paper, Fonts) --- */
+        /* --- DEFAULT PRESETS --- */
         const DEFAULT_TAPES = [
-            { id: 'tape1', src: '' }, // Default semi-transparent blue
+            { id: 'tape1', src: '' }, 
             { id: 'tape2', src: 'https://img.freepik.com/free-png/washi-tape-strip-patterned-design-element_53876-115383.jpg' },
             { id: 'tape3', src: 'https://img.freepik.com/free-vector/grid-washi-tape-vector-strip-cute-stationery-blue_53876-145694.jpg' }
         ];
@@ -366,9 +354,13 @@
             { id: 'pink', bg: '#f8bbd0' },
             { id: 'grid', bg: 'url("https://www.transparenttextures.com/patterns/graphy.png") #fff' }
         ];
-        const CUSTOM_FONTS = [
-            'Gaegu', 'Indie Flower', 'Patrick Hand', 'Permanent Marker', 'Shadows Into Light'
+        const DEFAULT_BGS = [
+            { id: 'cork', type: 'cork', name: 'Cork' },
+            { id: 'grid', type: 'grid', name: 'Grid' },
+            { id: 'pink', type: 'pink', name: 'Pink' },
+            { id: 'clouds', type: 'clouds', name: 'Clouds' }
         ];
+        const CUSTOM_FONTS = ['Gaegu', 'Indie Flower', 'Patrick Hand', 'Permanent Marker', 'Shadows Into Light'];
 
         const firebaseConfig = {
           apiKey: "AIzaSyCOqqMp096MQh19FEEYpdwDzhx-R9VlRrw",
@@ -382,7 +374,7 @@
         /* --- VARS --- */
         let db=null; let useFirebase=false; 
         let items=[]; let goals={}; let boardBgs={}; let pinterestBoards=[];
-        let userTapes=[]; let userPapers=[];
+        let userTapes=[]; let userPapers=[]; let userBackgrounds=[];
         
         let pickedColor={h:0,s:100,v:0,r:0,g:0,b:0,hex:"#000000"}; 
         let editingItemId=null; let currentActiveWeek=''; let currentEditorImage=null; let confirmCallback=null;
@@ -422,7 +414,7 @@
             document.getElementById('weeks-container').style.display = 'block';
             document.getElementById('pinterest-container').style.display = 'none';
             toggleNav();
-            renderAllItems(); // FIX: FORCE RE-RENDER
+            renderAllItems(); 
         }
 
         function showPinterestBoard(boardId) {
@@ -444,9 +436,43 @@
         function askHardReset() { const code = prompt("To delete EVERYTHING, type the word 'DELETE' below:"); if (code === "DELETE") { localStorage.clear(); location.reload(); } else if (code !== null) { alert("Incorrect code. Nothing was deleted."); } }
 
         /* --- DATA HANDLING --- */
-        function loadFromLocal(){ if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards')); if(localStorage.getItem('moodboard_assets')) { const assets = JSON.parse(localStorage.getItem('moodboard_assets')); userTapes=assets.tapes||[]; userPapers=assets.papers||[]; } renderApp(); }
-        function loadFromFirebase(){ db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();}); db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); db.collection("data").doc("boards").onSnapshot((d)=>{if(d.exists){pinterestBoards=d.data().list || []; renderBoardsList();}}); db.collection("data").doc("assets").onSnapshot((d)=>{if(d.exists){userTapes=d.data().tapes||[]; userPapers=d.data().papers||[]; renderEditorAssets(); }}); }
-        function saveData(t){ if(!useFirebase){ if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); if(t==='boards')localStorage.setItem('moodboard_pinboards',JSON.stringify(pinterestBoards)); if(t==='assets')localStorage.setItem('moodboard_assets', JSON.stringify({tapes:userTapes, papers:userPapers})); return; } if(t==='goals')db.collection("data").doc("goals").set(goals); if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); if(t==='boards')db.collection("data").doc("boards").set({list: pinterestBoards}); if(t==='assets')db.collection("data").doc("assets").set({tapes:userTapes, papers:userPapers}); }
+        function loadFromLocal(){ 
+            if(localStorage.getItem('moodboard_items_final')) items=JSON.parse(localStorage.getItem('moodboard_items_final')); 
+            if(localStorage.getItem('moodboard_goals_final')) goals=JSON.parse(localStorage.getItem('moodboard_goals_final')); 
+            if(localStorage.getItem('moodboard_bgs_final')) boardBgs=JSON.parse(localStorage.getItem('moodboard_bgs_final')); 
+            if(localStorage.getItem('moodboard_pinboards')) pinterestBoards=JSON.parse(localStorage.getItem('moodboard_pinboards')); 
+            if(localStorage.getItem('moodboard_assets')) { 
+                const assets = JSON.parse(localStorage.getItem('moodboard_assets')); 
+                userTapes=assets.tapes||[]; userPapers=assets.papers||[]; userBackgrounds=assets.backgrounds||[];
+            } 
+            renderApp(); 
+        }
+        function loadFromFirebase(){ 
+            db.collection("items").onSnapshot((s)=>{items=s.docs.map(d=>d.data());renderAllItems();}); 
+            db.collection("data").doc("goals").onSnapshot((d)=>{if(d.exists){goals=d.data();renderGoals();}}); 
+            db.collection("data").doc("bgs").onSnapshot((d)=>{if(d.exists){boardBgs=d.data();applyAllBoardBgs();}}); 
+            db.collection("data").doc("boards").onSnapshot((d)=>{if(d.exists){pinterestBoards=d.data().list || []; renderBoardsList();}}); 
+            db.collection("data").doc("assets").onSnapshot((d)=>{if(d.exists){
+                const dta = d.data();
+                userTapes=dta.tapes||[]; userPapers=dta.papers||[]; userBackgrounds=dta.backgrounds||[];
+                renderEditorAssets(); 
+            }}); 
+        }
+        function saveData(t){ 
+            const assetData = {tapes:userTapes, papers:userPapers, backgrounds:userBackgrounds};
+            if(!useFirebase){ 
+                if(t==='items')localStorage.setItem('moodboard_items_final',JSON.stringify(items)); 
+                if(t==='goals')localStorage.setItem('moodboard_goals_final',JSON.stringify(goals)); 
+                if(t==='bgs')localStorage.setItem('moodboard_bgs_final',JSON.stringify(boardBgs)); 
+                if(t==='boards')localStorage.setItem('moodboard_pinboards',JSON.stringify(pinterestBoards)); 
+                if(t==='assets')localStorage.setItem('moodboard_assets', JSON.stringify(assetData)); 
+                return; 
+            } 
+            if(t==='goals')db.collection("data").doc("goals").set(goals); 
+            if(t==='bgs')db.collection("data").doc("bgs").set(boardBgs); 
+            if(t==='boards')db.collection("data").doc("boards").set({list: pinterestBoards}); 
+            if(t==='assets')db.collection("data").doc("assets").set(assetData); 
+        }
         function renderApp(){ renderAllItems(); renderGoals(); applyAllBoardBgs(); renderBoardsList(); renderEditorAssets(); }
 
         /* --- EDITOR & CUSTOMIZATION LOGIC --- */
@@ -499,11 +525,9 @@
         function renderEditorAssets() {
             // Tapes
             const tapeDiv = document.getElementById('tab-tape');
-            // Keep the upload button
             const uploadTape = tapeDiv.firstElementChild; 
             const uploadBtnTape = tapeDiv.children[1];
             tapeDiv.innerHTML = ''; tapeDiv.appendChild(uploadTape); tapeDiv.appendChild(uploadBtnTape);
-            
             [...DEFAULT_TAPES, ...userTapes].forEach(t => {
                 const d = document.createElement('div'); d.className = 'style-opt';
                 if(t.src) d.style.backgroundImage = `url('${t.src}')`; else d.style.backgroundColor = 'rgba(100, 221, 231, 0.6)';
@@ -516,7 +540,6 @@
             const uploadPaper = paperDiv.firstElementChild; 
             const uploadBtnPaper = paperDiv.children[1];
             paperDiv.innerHTML = ''; paperDiv.appendChild(uploadPaper); paperDiv.appendChild(uploadBtnPaper);
-            
             [...DEFAULT_PAPERS, ...userPapers].forEach(p => {
                 const d = document.createElement('div'); d.className = 'style-opt';
                 if(p.bg.includes('url')) d.style.background = p.bg; else d.style.backgroundColor = p.bg;
@@ -526,9 +549,7 @@
 
             // Fonts
             const fontDiv = document.getElementById('tab-font');
-            // Reset to just color picker
             fontDiv.innerHTML = `<input type="color" id="fontColorPicker" value="${currentFontColor}" onchange="applyFontColor(this.value)" style="width:100%; height:30px; border:none; cursor:pointer;">`;
-            
             CUSTOM_FONTS.forEach(f => {
                 const d = document.createElement('div'); d.innerText = "Aa"; d.className = 'style-opt';
                 d.style.fontFamily = f; d.style.display = 'flex'; d.style.justifyContent = 'center'; d.style.alignItems = 'center';
@@ -578,7 +599,6 @@
                 id: editingItemId || Date.now(), type, text, 
                 moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, 
                 weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder,
-                // NEW STYLES
                 tapeUrl: currentTape, paperUrl: currentPaper, fontFamily: currentFont, fontColor: currentFontColor
             };
             
@@ -592,6 +612,69 @@
             const item={id:Date.now(),type:'sticker',text:'',moodName:'',imgUrl:dataURL,weekId:currentActiveWeek,x:50,y:50,w:200,h:200,rot:0,hasBorder:true}; 
             if(useFirebase) db.collection("items").doc(String(item.id)).set(item); else { items.push(item); saveData('items'); renderAllItems(); } 
             closeAllModals(); clearCanvas();
+        }
+
+        /* --- BACKGROUND MODAL LOGIC --- */
+        function openBgModal(id){
+            if(isLocked) return; 
+            currentActiveWeek = id;
+            renderBgModalItems();
+            document.getElementById('bgModal').style.display='flex'; 
+            document.getElementById('overlay').style.display='block';
+        }
+
+        function renderBgModalItems() {
+            const container = document.getElementById('bg-list-container');
+            container.innerHTML = '';
+            
+            // Add Upload Button First
+            const addBtn = document.createElement('div');
+            addBtn.className = 'bg-add-btn';
+            addBtn.innerText = '+';
+            addBtn.onclick = () => document.getElementById('bgAssetUpload').click();
+            container.appendChild(addBtn);
+
+            // Defaults
+            DEFAULT_BGS.forEach(bg => {
+                const btn = document.createElement('div');
+                btn.className = 'bg-btn bg-' + bg.type;
+                btn.innerText = bg.name;
+                btn.onclick = () => setBoardBg(bg.type);
+                container.appendChild(btn);
+            });
+
+            // User Uploads
+            userBackgrounds.forEach(bg => {
+                const btn = document.createElement('div');
+                btn.className = 'bg-preview-btn';
+                btn.style.backgroundImage = `url('${bg.src}')`;
+                btn.onclick = () => setBoardBg('custom', bg.src);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleBgAssetUpload(input) {
+            if(input.files && input.files[0]) {
+                const r = new FileReader();
+                r.onload = (e) => {
+                    userBackgrounds.push({ id: Date.now(), src: e.target.result });
+                    saveData('assets');
+                    renderBgModalItems();
+                };
+                r.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function setBoardBg(t, u=null){
+            if(u) boardBgs[currentActiveWeek]={type:'custom',url:u}; 
+            else boardBgs[currentActiveWeek]={type:t,url:null};
+            
+            // Apply immediately
+            const containerId = currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container";
+            applyBgToContainer(document.getElementById(containerId), boardBgs[currentActiveWeek]);
+            
+            saveData('bgs'); 
+            closeAllModals();
         }
 
         /* --- DOM CREATION --- */
@@ -619,16 +702,10 @@
             if(item.type === 'note') {
                 let moodContent = ''; if(item.moodImg && item.moodName) moodContent = `<div class="mood-tag"><img src="${item.moodImg}"><span>${item.moodName}</span></div>`;
                 
-                // APPLY CUSTOM STYLES
                 let paperStyle = '';
-                if(item.paperUrl) {
-                    if(item.paperUrl.includes('url')) paperStyle = `background: ${item.paperUrl};`;
-                    else paperStyle = `background-color: ${item.paperUrl};`;
-                }
-                
+                if(item.paperUrl) { if(item.paperUrl.includes('url')) paperStyle = `background: ${item.paperUrl};`; else paperStyle = `background-color: ${item.paperUrl};`; }
                 let tapeStyle = '';
                 if(item.tapeUrl) tapeStyle = `background-image: url('${item.tapeUrl}'); background-color: transparent;`;
-                
                 let fontStyle = `font-family: '${item.fontFamily || 'Gaegu'}', cursive; color: ${item.fontColor || '#444'};`;
 
                 innerContent = `
@@ -754,49 +831,15 @@
         }
 
         function deleteItem(id){if(isLocked)return; showConfirm("Delete this item?",()=>{if(useFirebase)db.collection("items").doc(String(id)).delete();else{items=items.filter(i=>i.id!==id);saveData('items');renderAllItems();}});}
-        
-        function renderAllItems(){
-            document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');
-            items.forEach(createDOMItem);
-        }
-        
-        function renderActivePinterestBoard() {
-            if(currentMode !== 'pinterest') return;
-            const container = document.getElementById('active-board-inner');
-            container.innerHTML = '';
-            const boardItems = items.filter(i => i.weekId === activeBoardId);
-            boardItems.forEach(createDOMItem);
-        }
+        function renderAllItems(){document.querySelectorAll('.board-inner').forEach(b=>b.innerHTML='');items.forEach(createDOMItem);}
 
-        /* --- HELPERS --- */
-        function openBgModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('bgModal').style.display='flex';document.getElementById('overlay').style.display='block';}
-        function openDrawModal(id){if(isLocked)return; currentActiveWeek=id;document.getElementById('drawModalTitle').innerText="Art Studio 🎨";document.getElementById('drawModal').style.display='flex';document.getElementById('overlay').style.display='block';resizeCanvas();}
-        function closeAllModals(){if(document.getElementById('confirmModal').style.display==='flex')return; document.querySelectorAll('.modal').forEach(m=>m.style.display='none');document.getElementById('overlay').style.display='none';}
-        function toggleColorPicker(){const cp=document.getElementById('ibisPicker');cp.style.display=cp.style.display==='none'?'flex':'none';}
-        function deselectAll(e){if(e.target.classList.contains('board-inner'))document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));}
-        function showConfirm(msg, cb) { document.getElementById('confirmMsg').innerText=msg; confirmCallback=cb; document.getElementById('confirmModal').style.display='flex'; document.getElementById('overlay').style.display='block'; }
-        function closeConfirm(res) { 
-            document.getElementById('confirmModal').style.display='none'; 
-            document.getElementById('overlay').style.display='none'; 
-            if(res && confirmCallback) confirmCallback(); 
-            confirmCallback=null; 
-        }
-        function openStatsModal(){calculateStats();document.getElementById('statsModal').style.display='flex';document.getElementById('overlay').style.display='block';toggleNav();}
-        function calculateStats(){const counts={};let total=0;items.forEach(item=>{if(item.type==='note' && item.moodName){counts[item.moodName]=(counts[item.moodName]||0)+1;total++;}});const html=Object.keys(counts).map(mood=>{const pct=Math.round((counts[mood]/total)*100);return `<div class="stat-row"><div class="stat-label">${mood}</div><div class="stat-bar-container"><div class="stat-bar" style="width:${pct}%"></div></div><div class="stat-pct">${pct}%</div></div>`;}).join('');document.getElementById('statsContent').innerHTML=total>0?html:"<p style='text-align:center'>No moods recorded yet!</p>";}
         function handleFileSelect(input){if(input.files&&input.files[0]){const r=new FileReader();r.onload=(e)=>{currentEditorImage=e.target.result;document.getElementById('editorImgPreview').src=currentEditorImage;document.getElementById('editorImgPreview').style.display='block';document.getElementById('photoLabel').style.display='none';};r.readAsDataURL(input.files[0]);}}
         function toggleNav(){const sb=document.getElementById("mySidebar");sb.style.width=sb.style.width==="250px"?"0":"250px";}
         function setBoardBg(t,u=null){if(u)boardBgs[currentActiveWeek]={type:'custom',url:u};else boardBgs[currentActiveWeek]={type:t,url:null};applyBgToContainer(document.getElementById(currentActiveWeek.startsWith('pin-') ? 'active-board-container' : currentActiveWeek+"-container"),boardBgs[currentActiveWeek]);saveData('bgs');closeAllModals();}
         function handleBgUpload(i){if(i.files[0]){const r=new FileReader();r.onload=(e)=>setBoardBg('custom',e.target.result);r.readAsDataURL(i.files[0]);}}
         function applyBgToContainer(c,d){if(!d || !c)return;c.classList.remove('board-bg-cork','board-bg-grid','board-bg-pink','board-bg-clouds');c.style.backgroundImage='';c.style.backgroundColor='';if(d.type==='custom'&&d.url){c.style.backgroundImage=`url('${d.url}')`;c.style.backgroundSize='cover';c.style.backgroundPosition='center';}else{c.classList.add('board-bg-'+d.type);}}
         function applyAllBoardBgs(){ activeWeeks.forEach(id=>{if(boardBgs[id])applyBgToContainer(document.getElementById(id+"-container"),boardBgs[id]);}); if(activeBoardId && boardBgs[activeBoardId]) applyBgToContainer(document.getElementById('active-board-container'), boardBgs[activeBoardId]); }
-        function initWeeks() { const today = new Date(); const currentWeekId = getWeekId(today); const prevDate = new Date(today); prevDate.setDate(today.getDate() - 7); const prevWeekId = getWeekId(prevDate); if(!activeWeeks.includes(prevWeekId)) activeWeeks.push(prevWeekId); if(!activeWeeks.includes(currentWeekId)) activeWeeks.push(currentWeekId); activeWeeks.sort(); const container = document.getElementById('weeks-container'); const sidebarList = document.getElementById('sidebar-weeks-list'); container.innerHTML = ''; sidebarList.innerHTML = ''; activeWeeks.forEach(id => { const datesLabel = getWeekLabel(id); const link = document.createElement('a'); link.href = "#"; link.innerText = datesLabel; link.onclick = () => { showWeeks(); window.location.hash = id; }; sidebarList.appendChild(link); const section = document.createElement('div'); section.className = 'week-section'; section.id = id; section.innerHTML = ` <div class="week-header"> <div class="week-title">${datesLabel}</div> <div class="board-actions"> <button class="action-btn btn-note" onclick="openNoteEditor('${id}')">📝 Sticky</button> <button class="action-btn btn-draw" onclick="openDrawModal('${id}')">🎨 Paint</button> <button class="action-btn btn-bg" onclick="openBgModal('${id}')">🖼️ BG</button> </div> </div> <div class="goals-strip"> <div class="goal-header"><span>Weekly Goals</span><button class="goal-add-btn" onclick="addGoal('${id}')">+ Add</button></div> <ul class="goal-list" id="goals-${id}"></ul> </div> <div class="board-container" id="${id}-container"> <div class="board-inner" id="board-${id}" onclick="deselectAll(event)"></div> </div>`; container.appendChild(section); }); }
-        function getWeekId(dateObj) { const d = new Date(dateObj); const day = d.getDay(); const diff = d.getDate() - day; const sunday = new Date(d.setDate(diff)); return "week-" + sunday.toISOString().split('T')[0]; }
-        function getWeekLabel(weekId) { const dateStr = weekId.replace('week-', ''); const start = new Date(dateStr); const end = new Date(start); end.setDate(start.getDate() + 6); const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; return `${monthNames[start.getMonth()]} ${start.getDate()} - ${end.getDate()}`; }
-        function addGoal(id){ if(isLocked) return; const t = prompt("New Goal:"); if(t){ if(!goals[id]) goals[id]=[]; goals[id].push({text:t, done:false}); saveData('goals'); renderGoals(); } }
-        function toggleGoal(id, idx){ if(isLocked) return; const d = !goals[id][idx].done; goals[id][idx].done = d; saveData('goals'); renderGoals(); if(d) confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
-        function deleteGoal(id, idx){ if(isLocked) return; showConfirm("Delete this goal?",()=>{ goals[id].splice(idx,1); saveData('goals'); renderGoals(); }); }
-        function renderGoals(){ for(const[id,list]of Object.entries(goals)){ const ul=document.getElementById('goals-'+id); if(!ul) continue; ul.innerHTML=''; list.forEach((g,i)=>{ const li=document.createElement('li'); li.innerHTML=`<input type="checkbox" ${g.done?'checked':''} onclick="toggleGoal('${id}',${i})"><span style="${g.done?'text-decoration:line-through;color:#bbb':''}" onclick="deleteGoal('${id}',${i})">${g.text}</span>`; ul.appendChild(li); }); } }
-
+        
         /* --- DRAW CANVAS --- */
         const canvas=document.getElementById('drawCanvas');const ctx=canvas.getContext('2d');let currentBrush='pen';let isDrawing=false;
         function resizeCanvas(){const container=document.querySelector('.canvas-container');canvas.width=container.clientWidth;canvas.height=container.clientHeight;}
