@@ -78,7 +78,6 @@
 
         .board-container { width: 100%; height: 55vh; border: 15px solid #e0c09e; border-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png") 30 round; box-shadow: inset 5px 5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.4); position: relative; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; transition: background 0.3s; background-color: #bcaaa4; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png'); background-size: auto; touch-action: pan-x pan-y; }
         
-        /* Board Backgrounds */
         .board-bg-cork { background-color: #bcaaa4 !important; background-image: url('https://www.transparenttextures.com/patterns/cork-board.png') !important; background-size: auto !important; }
         .board-bg-grid { background-color: #fdfdfd !important; background-image: linear-gradient(#ddd 1px, transparent 1px), linear-gradient(90deg, #ddd 1px, transparent 1px) !important; background-size: 30px 30px !important; }
         .board-bg-pink { background-color: #f8bbd0 !important; background-image: radial-gradient(#f48fb1 2px, transparent 2px) !important; background-size: 20px 20px !important; }
@@ -86,8 +85,11 @@
         .board-inner { width: 2000px; height: 100%; position: relative; }
 
         /* --- ITEMS --- */
-        .draggable-item { position: absolute; display: flex; flex-direction: column; touch-action: none; overflow: visible !important; transform-origin: center center; will-change: transform, left, top, width, height; }
+        .draggable-item { position: absolute; touch-action: none; overflow: visible !important; transform-origin: center center; will-change: transform, left, top, width, height; }
         .draggable-item.selected { z-index: 1000 !important; filter: drop-shadow(0 0 5px var(--c-accent)); }
+        
+        /* SCALABLE WRAPPER (This handles the zoom effect) */
+        .scalable-content { transform-origin: 0 0; position: absolute; top: 0; left: 0; }
 
         .note-paper { background-color: #fff; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); padding: 35px 15px 15px 55px; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; color: #444; font-size: 1.3rem; pointer-events: none; }
         .note-paper::after { content: ''; position: absolute; top: 0; left: 10px; width: 35px; height: 100%; background-image: radial-gradient(circle, #5d4037 8px, transparent 9px); background-size: 100% 40px; background-position: center 25px; background-repeat: repeat-y; opacity: 0.9; }
@@ -104,7 +106,7 @@
         .sticker-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
         .sticker-border .sticker-img { filter: drop-shadow(2px 2px 0 white) drop-shadow(-2px -2px 0 white) drop-shadow(2px -2px 0 white) drop-shadow(-2px 2px 0 white); }
 
-        /* HANDLES - Made larger for touch */
+        /* HANDLES */
         .control-handle { width: 40px; height: 40px; border: 2px solid white; border-radius: 50%; position: absolute; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 200; display: none; justify-content: center; align-items: center; cursor: pointer; touch-action: none; }
         .draggable-item.selected .control-handle { display: flex; }
         .resize-handle { background-color: var(--c-accent); right: -15px; bottom: -15px; font-size:1.5rem; }
@@ -405,7 +407,9 @@
         function saveFromEditor(type) {
             const text = document.getElementById('editorText').value; const hasBorder = document.getElementById('stickerBorderCheck').checked;
             let moodName = "Unknown"; const moodObj = CUSTOM_MOODS.find(m => m.src === selectedMoodSrc); if(moodObj) moodName = moodObj.name;
-            const newItem = { id: editingItemId || Date.now(), type, text, moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, weekId: currentActiveWeek, x: 50, y: 50, w: 220, h: 260, rot: 0, hasBorder: hasBorder };
+            const baseW = type === 'note' ? 220 : 200;
+            const baseH = type === 'note' ? 260 : 200;
+            const newItem = { id: editingItemId || Date.now(), type, text, moodName: selectedMoodSrc ? moodName : null, moodImg: selectedMoodSrc, imgUrl: currentEditorImage, weekId: currentActiveWeek, x: 50, y: 50, w: baseW, h: baseH, rot: 0, hasBorder: hasBorder };
             if (editingItemId) { const existing = items.find(i => i.id === editingItemId); if(existing) { newItem.x = existing.x; newItem.y = existing.y; newItem.w = existing.w; newItem.h = existing.h; newItem.rot = existing.rot; const idx = items.indexOf(existing); items[idx] = newItem; } } else { items.push(newItem); }
             if(useFirebase) db.collection("items").doc(String(newItem.id)).set(newItem); else { saveData('items'); renderAllItems(); }
             closeAllModals();
@@ -418,30 +422,49 @@
             closeAllModals(); clearCanvas();
         }
 
+        /* --- DOM CREATION (With Scaling) --- */
         function createDOMItem(item) {
             const board = document.getElementById('board-' + item.weekId); if(!board) return;
             const div = document.createElement('div'); div.classList.add('draggable-item');
-            div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
+            
+            // Apply coordinates and size
+            div.style.left = item.x + 'px'; div.style.top = item.y + 'px'; 
+            div.style.width = item.w + 'px'; div.style.height = item.h + 'px';
             div.style.transform = `rotate(${item.rot}deg)`; div.style.zIndex = 1;
-            let content = `<div class="control-handle resize-handle">↘</div><div class="control-handle delete-handle">✖</div><div class="control-handle edit-handle">✎</div><div class="control-handle rotate-handle"></div>`;
+
+            // Calculate Scale for Inner Content
+            const baseW = item.type === 'note' ? 220 : 200;
+            const baseH = item.type === 'note' ? 260 : 200;
+            // Prevent division by zero if bad data
+            const scaleX = item.w / baseW || 1;
+            const scaleY = item.h / baseH || 1;
+
+            let handles = `<div class="control-handle resize-handle">↘</div><div class="control-handle delete-handle">✖</div><div class="control-handle edit-handle">✎</div><div class="control-handle rotate-handle"></div>`;
+            
+            let innerContent = '';
             if(item.type === 'note') {
                 let moodContent = ''; if(item.moodImg && item.moodName) moodContent = `<div class="mood-tag"><img src="${item.moodImg}"><span>${item.moodName}</span></div>`;
-                content += `<div class="inner-content note-paper"><div class="tape"></div><div class="note-text-area">${item.text}</div><div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div></div>`;
+                innerContent = `<div class="note-paper"><div class="tape"></div><div class="note-text-area">${item.text}</div><div class="note-footer"><div class="note-mood-display">${moodContent}</div>${item.imgUrl?`<div class="note-polaroid"><img src="${item.imgUrl}"></div>`:''}</div></div>`;
             } else {
                 const borderClass = item.hasBorder ? 'sticker-border' : '';
-                if(item.imgUrl) content += `<div class="inner-content ${borderClass}"><img src="${item.imgUrl}" class="sticker-img"></div>`;
+                if(item.imgUrl) innerContent = `<div class="${borderClass}"><img src="${item.imgUrl}" class="sticker-img" style="width:100%; height:100%; object-fit:contain;"></div>`;
             }
-            div.innerHTML = content;
-            setupItemEvents(div, item);
+
+            // Wrap inner content in scaling div
+            const scaledWrapper = `<div class="scalable-content" style="width:${baseW}px; height:${baseH}px; transform: scale(${scaleX}, ${scaleY});">${innerContent}</div>`;
+            
+            div.innerHTML = handles + scaledWrapper;
+            setupItemEvents(div, item, baseW, baseH);
             board.appendChild(div);
         }
 
-        function setupItemEvents(div, item) {
+        function setupItemEvents(div, item, baseW, baseH) {
+            const scalable = div.querySelector('.scalable-content');
+
             // SINGLE FINGER ACTIONS (Handles)
             const resizer = div.querySelector('.resize-handle');
             const rotater = div.querySelector('.rotate-handle');
             
-            // Allow handles to work via Touch or Mouse
             function handleStart(e, action) {
                 if(isLocked) return;
                 e.preventDefault(); e.stopPropagation();
@@ -461,10 +484,17 @@
                     const cy = (ev.touches ? ev.touches[0].clientY : ev.clientY);
 
                     if(action === 'resize') {
-                        const newW = startW + (cx - startX);
-                        const newH = startH + (cy - startY);
-                        if(newW > 50) div.style.width = newW + 'px';
-                        if(newH > 50) div.style.height = newH + 'px';
+                        const newW = Math.max(50, startW + (cx - startX));
+                        const newH = Math.max(50, startH + (cy - startY));
+                        
+                        div.style.width = newW + 'px';
+                        div.style.height = newH + 'px';
+                        
+                        // Update Scale
+                        const sX = newW / baseW;
+                        const sY = newH / baseH;
+                        if(scalable) scalable.style.transform = `scale(${sX}, ${sY})`;
+
                     } else if (action === 'rotate') {
                         const curAngle = Math.atan2(cy - centerY, cx - centerX) * 180 / Math.PI;
                         const newRot = initialRot + (curAngle - startAngle);
@@ -497,20 +527,21 @@
                 div.querySelector('.edit-handle').addEventListener('touchstart', (e) => { e.stopPropagation(); openNoteEditor(item); });
             }
 
-            // MAIN ITEM DRAG (And pinch support, but without tap conflict)
-            let initialDist=0; let initialAngle=0; let initialScale=1; let initialRot=0; let startX=0; let startY=0; let initialLeft=0; let initialTop=0; let initialW=0; let initialH=0;
+            // TOUCH PINCH (ZOOM) & DRAG
+            let initialDist=0; let initialAngle=0; let initialRot=0; 
+            let startX=0; let startY=0; let initialLeft=0; let initialTop=0; 
+            let initialW=0; let initialH=0;
             
             function handleItemTouchStart(e) {
                 if(isLocked) return;
-                if(e.target.classList.contains('control-handle')) return; // Let handles handle themselves
+                if(e.target.classList.contains('control-handle')) return; 
                 
-                // Select Item
                 document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
                 div.classList.add('selected'); div.style.zIndex = 100;
 
                 const touches = e.touches;
                 if(touches.length === 1) {
-                    e.preventDefault(); // Stop scrolling
+                    e.preventDefault();
                     startX = touches[0].clientX; startY = touches[0].clientY;
                     initialLeft = parseFloat(div.style.left || 0); initialTop = parseFloat(div.style.top || 0);
                 } else if (touches.length === 2) {
@@ -537,9 +568,17 @@
                     const t1 = touches[0]; const t2 = touches[1];
                     const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
                     const scaleFactor = currentDist / initialDist;
-                    const newW = initialW * scaleFactor; const newH = initialH * scaleFactor;
-                    if(newW > 50) div.style.width = newW + 'px';
-                    if(newH > 50) div.style.height = newH + 'px';
+                    
+                    const newW = Math.max(50, initialW * scaleFactor); 
+                    const newH = Math.max(50, initialH * scaleFactor);
+                    
+                    div.style.width = newW + 'px';
+                    div.style.height = newH + 'px';
+
+                    // Update Scale Transform
+                    const sX = newW / baseW;
+                    const sY = newH / baseH;
+                    if(scalable) scalable.style.transform = `scale(${sX}, ${sY})`;
 
                     const currentAngle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
                     const newRot = initialRot + (currentAngle - initialAngle);
@@ -561,7 +600,7 @@
             div.addEventListener('touchmove', handleItemTouchMove, {passive:false});
             div.addEventListener('touchend', handleItemTouchEnd);
             
-            // Keep Mouse for desktop fallback
+            // Mouse Drag Fallback
             div.addEventListener('mousedown', (e) => {
                 if(isLocked || e.target.classList.contains('control-handle')) return;
                 document.querySelectorAll('.draggable-item').forEach(el=>el.classList.remove('selected'));
