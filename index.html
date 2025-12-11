@@ -294,16 +294,23 @@
     <script>
         const TITLE_IMAGE_SRC = "https://fontmeme.com/permalink/231211/a8596068ce879003632970959067963d.png";
         const CUSTOM_MOODS = [
-            { name: "happy", src: "https://cdn-icons-png.flaticon.com/128/166/166538.png" },
-            { name: "loved", src: "https://cdn-icons-png.flaticon.com/128/210/210545.png" },
-            { name: "sad", src: "https://cdn-icons-png.flaticon.com/128/166/166549.png" },
-            { name: "angry", src: "https://cdn-icons-png.flaticon.com/128/1791/1791330.png" },
-            { name: "tired", src: "https://cdn-icons-png.flaticon.com/128/166/166527.png" }
+            { name: "hapi", src: "./hapi.png" },
+            { name: "hapi with ethan", src: "./hapi with ethan.png" },
+            { name: "sad", src: "./sad.png" },
+            { name: "tampo", src: "./tampo.png" },
+            { name: "angy", src: "./angy.png" },
+            { name: "meh", src: "./meh.png" },
+            { name: "yap", src: "./yap.png" }
         ];
 
         const firebaseConfig = {
-            // apiKey: "...",
-        }; 
+          apiKey: "AIzaSyCOqqMp096MQh19FEEYpdwDzhx-R9VlRrw",
+          authDomain: "moodboard-e7832.firebaseapp.com",
+          projectId: "moodboard-e7832",
+          storageBucket: "moodboard-e7832.firebasestorage.app",
+          messagingSenderId: "173097557380",
+          appId: "1:173097557380:web:7a188a47ed996e7fa091d1"
+        };
 
         let db=null; let useFirebase=false; let items=[]; let goals={}; let boardBgs={}; 
         let pickedColor={h:0,s:100,v:0,r:0,g:0,b:0,hex:"#000000"}; 
@@ -649,3 +656,4 @@
     </script>
 </body>
 </html>
+
