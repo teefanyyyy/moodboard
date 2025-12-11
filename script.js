@@ -60,6 +60,7 @@ window.onload = function() {
     initMoodSelector();
     initWeeks(); 
     updateLockUI();
+    loadWallpaper(); // <--- ADD THIS LINE HERE
     
     if(firebaseConfig.apiKey){
         firebase.initializeApp(firebaseConfig);
@@ -628,3 +629,33 @@ function initColorPicker(){const ring=document.getElementById('hueRing');const s
 function hsvToRgb(h,s,v){let r,g,b;const i=Math.floor(h*6);const f=h*6-i;const p=v*(1-s);const q=v*(1-f*s);const t=v*(1-(1-f)*s);switch(i%6){case 0:r=v,g=t,b=p;break;case 1:r=q,g=v,b=p;break;case 2:r=p,g=v,b=t;break;case 3:r=p,g=q,b=v;break;case 4:r=t,g=p,b=v;break;case 5:r=v,g=p,b=q;break;}return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};}
 function updateColorUI(){document.getElementById('svSquare').style.backgroundColor=`hsl(${pickedColor.h},100%,50%)`;const rgb=hsvToRgb(pickedColor.h/360,pickedColor.s/100,pickedColor.v/100);pickedColor.r=rgb.r;pickedColor.g=rgb.g;pickedColor.b=rgb.b;pickedColor.hex=`rgb(${rgb.r},${rgb.g},${rgb.b})`;const svInd=document.getElementById('svInd');svInd.style.left=pickedColor.s+'%';svInd.style.top=(100-pickedColor.v)+'%';document.getElementById('rSlider').value=rgb.r;document.getElementById('gSlider').value=rgb.g;document.getElementById('bSlider').value=rgb.b;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
 function updateColorFromSliders(){const r=parseInt(document.getElementById('rSlider').value);const g=parseInt(document.getElementById('gSlider').value);const b=parseInt(document.getElementById('bSlider').value);pickedColor.hex=`rgb(${r},${g},${b})`;document.getElementById('colorPreview').style.backgroundColor=pickedColor.hex;}
+/* --- WALLPAPER LOGIC --- */
+function uploadWallpaper(input) {
+    if(input.files && input.files[0]) {
+        const r = new FileReader();
+        r.onload = (e) => {
+            const imgData = e.target.result;
+            // Save image data to local storage
+            localStorage.setItem('moodboard_global_bg', imgData);
+            // Apply immediately
+            document.body.style.backgroundImage = `url('${imgData}')`;
+            closeAllModals();
+        };
+        r.readAsDataURL(input.files[0]);
+    }
+}
+
+function loadWallpaper() {
+    const savedBg = localStorage.getItem('moodboard_global_bg');
+    if(savedBg) {
+        document.body.style.backgroundImage = `url('${savedBg}')`;
+    } else {
+        document.body.style.backgroundImage = '';
+    }
+}
+
+function resetWallpaper() {
+    localStorage.removeItem('moodboard_global_bg');
+    document.body.style.backgroundImage = '';
+    closeAllModals();
+}
