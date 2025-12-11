@@ -444,7 +444,10 @@
                 pinterestBoards.forEach(board => { 
                     const a = document.createElement('a'); 
                     a.innerText = "📌 " + board.name; 
-                    a.onclick = () => { showPinterestBoard(board.id); toggleNav(); }; 
+                    a.onclick = () => { 
+                        document.getElementById("mySidebar").style.width = "0";
+                        showPinterestBoard(board.id); 
+                    }; 
                     list.appendChild(a); 
                 }); 
             } 
@@ -855,4 +858,3 @@
     </script>
 </body>
 </html>
-
